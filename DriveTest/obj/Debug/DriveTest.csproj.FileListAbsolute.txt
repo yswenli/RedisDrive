@@ -24,3 +24,6 @@ C:\Users\Administrator\Desktop\test\RedisDrive\DriveTest\obj\Debug\DriveTest.csp
 C:\Users\Administrator\Desktop\test\RedisDrive\DriveTest\obj\Debug\DriveTest.exe
 C:\Users\Administrator\Desktop\test\RedisDrive\DriveTest\obj\Debug\DriveTest.pdb
 C:\Users\Administrator\Desktop\test\RedisDrive\DriveTest\bin\Debug\Wenli.Drive.Redis.xml
+E:\百度云\Develop\Redis\RedisDrive\DriveTest\bin\Debug\DriveTest.exe.config
+E:\百度云\Develop\Redis\RedisDrive\DriveTest\obj\Debug\DriveTest.exe
+E:\百度云\Develop\Redis\RedisDrive\DriveTest\obj\Debug\DriveTest.pdb

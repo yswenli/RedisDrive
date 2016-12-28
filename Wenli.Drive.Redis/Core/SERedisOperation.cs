@@ -78,11 +78,11 @@ namespace Wenli.Drive.Redis.Core
 
                     if (ex is TimeoutException)
                     {
-                        retryCountMsg = string.Format("Redis<T>操作超时，等待随后重试。当前已经重试：{0}", counter);
+                        retryCountMsg = string.Format("TimeoutException Redis<T>操作超时，等待随后重试。当前已经重试：{0};ex:{1}", counter, ex.Message);
                     }
                     else if (ex is RedisConnectionException)
                     {
-                        retryCountMsg = string.Format("Redis<T>连接异常，等待随后重试。当前已重试：{0}", counter);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T>连接异常，等待随后重试。当前已重试：{0};ex:{1}", counter, ex.Message);
                     }
                     else
                     {
@@ -118,11 +118,11 @@ namespace Wenli.Drive.Redis.Core
 
                     if (ex is TimeoutException)
                     {
-                        retryCountMsg = retryCountMsg = string.Format("Redis操作超时，等待随后重试。当前已经重试：{0}", counter);
+                        retryCountMsg = string.Format("TimeoutException Redis<T>操作超时，等待随后重试。当前已经重试：{0};ex:{1}", counter, ex.Message);
                     }
                     else if (ex is RedisConnectionException)
                     {
-                        retryCountMsg = string.Format("Redis连接异常，等待随后重试。当前已重试：{0}", counter);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T>连接异常，等待随后重试。当前已重试：{0};ex:{1}", counter, ex.Message);
                     }
                     else
                     {
