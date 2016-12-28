@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wenli.Drive.Redis", "Wenli.Drive.Redis\Wenli.Drive.Redis.csproj", "{119B14B9-5934-46A0-9254-E814E22DA67B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriveTest", "DriveTest\DriveTest.csproj", "{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{119B14B9-5934-46A0-9254-E814E22DA67B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{119B14B9-5934-46A0-9254-E814E22DA67B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{119B14B9-5934-46A0-9254-E814E22DA67B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{119B14B9-5934-46A0-9254-E814E22DA67B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
