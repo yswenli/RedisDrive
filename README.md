@@ -1,7 +1,7 @@
 # RedisDrive
-这是一个.net 的redis集成驱动，支持单实例、云集群、哨兵等模式的数据操作
+这是一个.net 的redis集成驱动，支持单实例、云集群、哨兵等模式的数据操作，支持keys等命令
 
-本驱动基于stackexcnage.redis完成
+本驱动基于stackexcnage.redis完成,在此基础上强化使用的简洁性、可靠性
 
 wenli.Drive.Redis使用方法：
 
