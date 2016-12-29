@@ -84,6 +84,22 @@ namespace Wenli.Drive.Redis.Interface
         string StringGetSet(string key, string value);
 
         /// <summary>
+        /// 获取全部keys
+        /// </summary>
+        /// <param name="patten"></param>
+        /// <returns></returns>
+        List<string> StringGetKeys(string patten = "*");
+
+        /// <summary>
+        /// 获取全部keys
+        /// </summary>        
+        /// <param name="pageSize"></param>
+        /// <param name="dbIndex"></param>
+        /// <param name="patten"></param>
+        /// <returns></returns>
+        List<string> StringGetKeys(int pageSize, int dbIndex = -1, string patten = "*");
+
+        /// <summary>
         ///     获取key
         /// </summary>
         /// <param name="key"></param>

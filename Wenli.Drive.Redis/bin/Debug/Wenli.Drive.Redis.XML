@@ -45,11 +45,11 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.Keys(System.Int32)">
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.Keys(System.String)">
             <summary>
             获取某服务器上全部keys
             </summary>
-            <param name="pageSize"></param>
+            <param name="patten"></param>
             <returns></returns>
         </member>
         <member name="T:Wenli.Drive.Redis.Core.SERedisConnectionPoolManager">
@@ -235,6 +235,22 @@
             </summary>
             <param name="key"></param>
             <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringGetKeys(System.String)">
+            <summary>
+            获取全部keys
+            </summary>
+            <param name="patten"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringGetKeys(System.Int32,System.Int32,System.String)">
+            <summary>
+            获取全部keys
+            </summary>
+            <param name="pageSize"></param>
+            /// <param name="dbIndex"></param>
+            <param name="patten"></param>
             <returns></returns>
         </member>
         <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringGet(System.String)">
@@ -877,6 +893,22 @@
             </summary>
             <param name="key"></param>
             <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringGetKeys(System.String)">
+            <summary>
+            获取全部keys
+            </summary>
+            <param name="patten"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringGetKeys(System.Int32,System.Int32,System.String)">
+            <summary>
+            获取全部keys
+            </summary>        
+            <param name="pageSize"></param>
+            <param name="dbIndex"></param>
+            <param name="patten"></param>
             <returns></returns>
         </member>
         <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringGet(System.String)">

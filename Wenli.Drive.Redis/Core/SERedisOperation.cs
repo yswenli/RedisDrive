@@ -92,7 +92,8 @@ namespace Wenli.Drive.Redis.Core
                     // 将重试写成错误，引起重视
                     Log4NetHelper.WriteErrLog(retryCountMsg, ex);
 
-                    if (counter > _busyRetry) throw ex;  // 大于重试次数，将直接抛出去
+                    if (counter > _busyRetry)
+                        throw ex;  // 大于重试次数，将直接抛出去
                     Thread.Sleep(counter * _busyRetryWaitMS);
 
                 }
@@ -132,7 +133,8 @@ namespace Wenli.Drive.Redis.Core
                     // 将重试写成错误，引起重视
                     Log4NetHelper.WriteErrLog(retryCountMsg, ex);
 
-                    if (counter > _busyRetry) throw ex;  // 大于重试次数，将直接抛出去
+                    if (counter > _busyRetry)
+                        throw ex;  // 大于重试次数，将直接抛出去
                     Thread.Sleep(counter * _busyRetryWaitMS);
                 }
             }
@@ -274,6 +276,55 @@ namespace Wenli.Drive.Redis.Core
         }
 
         /// <summary>
+        /// 获取全部keys
+        /// </summary>
+        /// <param name="patten"></param>
+        /// <returns></returns>
+        [Obsolete("此方法只用于兼容老数据,且本方法只能查询db0，建议使用sortedset来保存keys")]
+        public List<string> StringGetKeys(string patten = "*")
+        {
+            return DoWithRetry(() =>
+            {
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    return cnn.Keys(patten);
+                }
+            });
+        }
+
+        /// <summary>
+        /// 获取全部keys
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// /// <param name="dbIndex"></param>
+        /// <param name="patten"></param>
+        /// <returns></returns>
+        [Obsolete("此方法只用于兼容老数据，建议使用sortedset来保存keys")]
+        public List<string> StringGetKeys(int pageSize, int dbIndex = -1, string patten = "*")
+        {
+            return DoWithRetry(() =>
+            {
+                List<string> keys = new List<string>();
+
+                using (var cnn = new SERedisConnection(_sectionName, dbIndex == -1 ? _dbIndex : dbIndex))
+                {
+                    var result = cnn.GetDatabase().ScriptEvaluate(LuaScript.Prepare("return  redis.call('KEYS', '*')"), CommandFlags.PreferSlave);
+
+                    if (!result.IsNull)
+                    {
+                        var list = (RedisResult[])result;
+                        foreach (var item in list)
+                        {
+                            var key = (RedisKey)item;
+                            keys.Add(key.ToString());
+                        }
+                    }
+                }
+                return keys;
+            });
+        }
+
+        /// <summary>
         ///     获取key
         /// </summary>
         /// <param name="key"></param>
@@ -333,7 +384,10 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         public List<T> GetValues<T>(List<string> keys) where T : class, new()
         {
-            return DoWithRetry(() => { return GetValues<T>(keys.ToArray()); });
+            return DoWithRetry(() =>
+            {
+                return GetValues<T>(keys.ToArray());
+            });
         }
 
         /// <summary>
@@ -414,7 +468,10 @@ namespace Wenli.Drive.Redis.Core
         /// <param name="keys"></param>
         public void KeysDelete(List<string> keys)
         {
-            DoWithRetry(() => { KeysDelete(keys.ToArray()); });
+            DoWithRetry(() =>
+            {
+                KeysDelete(keys.ToArray());
+            });
         }
 
         /// <summary>
@@ -737,7 +794,10 @@ namespace Wenli.Drive.Redis.Core
                     var list = cnn.GetDatabase().HashGetAll(hashId).ToList();
 
                     if (list.Count > 0)
-                        list.ForEach(x => { result.Add(x.Name, x.Value); });
+                        list.ForEach(x =>
+                        {
+                            result.Add(x.Name, x.Value);
+                        });
                     return result;
                 }
             });
@@ -812,7 +872,10 @@ namespace Wenli.Drive.Redis.Core
                     var result = new List<string>();
                     var list = cnn.GetDatabase().HashKeys(hashId).ToList();
                     if (list.Count > 0)
-                        list.ForEach(x => { result.Add(x.ToString()); });
+                        list.ForEach(x =>
+                        {
+                            result.Add(x.ToString());
+                        });
                     return result;
                 }
             });
@@ -1050,7 +1113,10 @@ namespace Wenli.Drive.Redis.Core
                                 order == Order.Descending.ToString().ToLower() ? Order.Descending : Order.Ascending)
                             .ToList();
                     if (list.Any())
-                        list.ForEach(x => { result.Add(x.ToString()); });
+                        list.ForEach(x =>
+                        {
+                            result.Add(x.ToString());
+                        });
                     return result;
                 }
             });
@@ -1078,7 +1144,10 @@ namespace Wenli.Drive.Redis.Core
                                 order == Order.Descending.ToString().ToLower() ? Order.Descending : Order.Ascending)
                             .ToList();
                     if (list.Any())
-                        list.ForEach(x => { result.Add(x.Element, x.Score); });
+                        list.ForEach(x =>
+                        {
+                            result.Add(x.Element, x.Score);
+                        });
                     return result;
                 }
             });

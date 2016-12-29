@@ -91,10 +91,10 @@ namespace Wenli.Drive.Redis.Core
         /// <summary>
         /// 获取某服务器上全部keys
         /// </summary>
-        /// <param name="pageSize"></param>
+        /// <param name="patten"></param>
         /// <returns></returns>
-        [Obsolete("此方法只用于兼容老数据，建议使用sortedset来保存keys")]
-        public List<string> Keys(int pageSize = 100)
+        [Obsolete("此方法只用于兼容老数据,且本方法只能查询db0，建议使用sortedset来保存keys")]
+        public List<string> Keys(string patten = "*")
         {
             return _cnn.GetServer(_cnn.GetEndPoints()[0]).Keys(pattern: "*").Select(b => b.ToString()).ToList();
         }
