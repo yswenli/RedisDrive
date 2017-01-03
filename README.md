@@ -464,3 +464,32 @@ app.config(web.config)配置如下：
             Console.ReadLine();
         }
     }
+    
+    
+    授权
+
+wenli.Drive.Redis 采用LGPL开源协议：
+
+如果您不对 wenli.Drive.Redis 程序代码进行任何修改，直接调用组件，可以以任意方式自由使用：开源、非开源、商业及非商业。
+
+如果您对 wenli.Drive.Redis 程序代码进行任何的修改或者衍生，涉及修改部分的额外代码和衍生的代码都必须采用 LGPL 协议开放源代码。
+
+无论您对 wenli.Drive.Redis 程序代码如何修改，都必须在程序文件头部声明版权信息的注释（包括压缩版）
+
+Open Source (OSI) Logo
+
+LGPL协议原文：GNU Lesser General Public License
+
+商业授权
+
+您可以将 wenli.Drive.Redis 程序直接使用在自己的商业或者非商业网站或者软件产品中。
+
+您可以对 wenli.Drive.Redis 进行修改和美化，可以去除 wenli.Drive.Redis 版权注释或改变程序名称，无需公开您修改或美化过的 wenli.Drive.Redis 程序与界面。
+
+商业授权每个公司只需要购买一次，而不限制产品域名。适用于 wenli.Drive.Redis 现有版本和所有后续版本，永久有效。
+
+您享有反映和提出意见的优先权，相关意见将被作为首要考虑。
+
+商业授权全文 | 授权价格：99元 | 支付方式：支付宝
+
+联系Email/支付宝帐号: wenguoli_520@hotmail.com
