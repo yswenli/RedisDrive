@@ -25,7 +25,10 @@ namespace Wenli.Drive.Redis
         ///     当前配置名称
         ///     此属性为必须
         /// </summary>
-        public string SectionName { get; set; }
+        public string SectionName
+        {
+            get; set;
+        }
 
         /// <summary>
         ///     配置类型
@@ -33,8 +36,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("Type", IsRequired = true)]
         public int Type
         {
-            get { return (int) base["Type"]; }
-            set { base["Type"] = value; }
+            get
+            {
+                return (int)base["Type"];
+            }
+            set
+            {
+                base["Type"] = value;
+            }
         }
 
         /// <summary>
@@ -43,8 +52,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("Password", IsRequired = false)]
         public string Password
         {
-            get { return (string) base["Password"]; }
-            set { base["Password"] = value; }
+            get
+            {
+                return (string)base["Password"];
+            }
+            set
+            {
+                base["Password"] = value;
+            }
         }
 
         /// <summary>
@@ -53,8 +68,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("Masters", IsRequired = true)]
         public string Masters
         {
-            get { return (string) base["Masters"]; }
-            set { base["Masters"] = value; }
+            get
+            {
+                return (string)base["Masters"];
+            }
+            set
+            {
+                base["Masters"] = value;
+            }
         }
 
         /// <summary>
@@ -63,8 +84,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("Slaves", IsRequired = false)]
         public string Slaves
         {
-            get { return (string) base["Slaves"]; }
-            set { base["Slaves"] = value; }
+            get
+            {
+                return (string)base["Slaves"];
+            }
+            set
+            {
+                base["Slaves"] = value;
+            }
         }
 
         /// <summary>
@@ -73,8 +100,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("ServiceName", IsRequired = false, DefaultValue = "mymaster")]
         public string ServiceName
         {
-            get { return (string) base["ServiceName"]; }
-            set { base["ServiceName"] = value; }
+            get
+            {
+                return (string)base["ServiceName"];
+            }
+            set
+            {
+                base["ServiceName"] = value;
+            }
         }
 
         /// <summary>
@@ -83,8 +116,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("DefaultDatabase", IsRequired = false, DefaultValue = 0)]
         public int DefaultDatabase
         {
-            get { return (int) base["DefaultDatabase"]; }
-            set { base["DefaultDatabase"] = value; }
+            get
+            {
+                return (int)base["DefaultDatabase"];
+            }
+            set
+            {
+                base["DefaultDatabase"] = value;
+            }
         }
 
         /// <summary>
@@ -93,28 +132,46 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("AllowAdmin", IsRequired = false, DefaultValue = true)]
         public bool AllowAdmin
         {
-            get { return (bool) base["AllowAdmin"]; }
-            set { base["AllowAdmin"] = value; }
+            get
+            {
+                return (bool)base["AllowAdmin"];
+            }
+            set
+            {
+                base["AllowAdmin"] = value;
+            }
         }
 
         /// <summary>
         ///     连接保持(s)
         /// </summary>
-        [ConfigurationProperty("KeepAlive", IsRequired = false, DefaultValue = 180)]
+        [ConfigurationProperty("KeepAlive", IsRequired = false, DefaultValue = 30)]
         public int KeepAlive
         {
-            get { return (int) base["KeepAlive"]; }
-            set { base["KeepAlive"] = value; }
+            get
+            {
+                return (int)base["KeepAlive"];
+            }
+            set
+            {
+                base["KeepAlive"] = value;
+            }
         }
 
         /// <summary>
         ///     连接超时(ms)
         /// </summary>
-        [ConfigurationProperty("ConnectTimeout", IsRequired = false, DefaultValue = 180*1000)]
+        [ConfigurationProperty("ConnectTimeout", IsRequired = false, DefaultValue = 10 * 1000)]
         public int ConnectTimeout
         {
-            get { return (int) base["ConnectTimeout"]; }
-            set { base["ConnectTimeout"] = value; }
+            get
+            {
+                return (int)base["ConnectTimeout"];
+            }
+            set
+            {
+                base["ConnectTimeout"] = value;
+            }
         }
 
         /// <summary>
@@ -123,8 +180,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("ConnectRetry", IsRequired = false, DefaultValue = 10)]
         public int ConnectRetry
         {
-            get { return (int) base["ConnectRetry"]; }
-            set { base["ConnectRetry"] = value; }
+            get
+            {
+                return (int)base["ConnectRetry"];
+            }
+            set
+            {
+                base["ConnectRetry"] = value;
+            }
         }
 
         /// <summary>
@@ -134,8 +197,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("BusyRetry", IsRequired = false, DefaultValue = 10)]
         public int BusyRetry
         {
-            get { return (int) base["BusyRetry"]; }
-            set { base["BusyRetry"] = value; }
+            get
+            {
+                return (int)base["BusyRetry"];
+            }
+            set
+            {
+                base["BusyRetry"] = value;
+            }
         }
 
         /// <summary>
@@ -144,8 +213,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("BusyRetryWaitMS", IsRequired = false, DefaultValue = 1000)]
         public int BusyRetryWaitMS
         {
-            get { return (int) base["BusyRetryWaitMS"]; }
-            set { base["BusyRetryWaitMS"] = value; }
+            get
+            {
+                return (int)base["BusyRetryWaitMS"];
+            }
+            set
+            {
+                base["BusyRetryWaitMS"] = value;
+            }
         }
 
         /// <summary>
@@ -154,8 +229,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("PoolSize", IsRequired = false, DefaultValue = 1)]
         public int PoolSize
         {
-            get { return (int) base["PoolSize"]; }
-            set { base["PoolSize"] = value; }
+            get
+            {
+                return (int)base["PoolSize"];
+            }
+            set
+            {
+                base["PoolSize"] = value;
+            }
         }
 
 
@@ -165,8 +246,14 @@ namespace Wenli.Drive.Redis
         [ConfigurationProperty("CommandTimeout", IsRequired = false, DefaultValue = 60000)]
         public int CommandTimeout
         {
-            get { return (int)base["CommandTimeout"]; }
-            set { base["CommandTimeout"] = value; }
+            get
+            {
+                return (int)base["CommandTimeout"];
+            }
+            set
+            {
+                base["CommandTimeout"] = value;
+            }
         }
 
         #region 从配置文件中创建redis配置类
@@ -177,7 +264,7 @@ namespace Wenli.Drive.Redis
         /// <returns></returns>
         public static RedisConfig GetConfig()
         {
-            return (RedisConfig) ConfigurationManager.GetSection("RedisConfig");
+            return (RedisConfig)ConfigurationManager.GetSection("RedisConfig");
         }
 
         /// <summary>
@@ -187,7 +274,7 @@ namespace Wenli.Drive.Redis
         /// <returns></returns>
         public static RedisConfig GetConfig(string sectionName)
         {
-            var section = (RedisConfig) ConfigurationManager.GetSection(sectionName);
+            var section = (RedisConfig)ConfigurationManager.GetSection(sectionName);
             //  跟默认配置相同的，可以省略
             if (section == null)
                 section = GetConfig();
@@ -219,7 +306,7 @@ namespace Wenli.Drive.Redis
         {
             if (config == null)
                 throw new ConfigurationErrorsException("传入的配置不能为空");
-            var section = (RedisConfig) config.GetSection(sectionName);
+            var section = (RedisConfig)config.GetSection(sectionName);
             if (section == null)
                 throw new ConfigurationErrorsException("rediscofng节点 " + sectionName + " 未配置.");
             section.SectionName = sectionName;

@@ -57,8 +57,8 @@ namespace Wenli.Drive.Redis.Core
                     return;
 
                 foreach (var cnn in _pool)
-                    cnn.Dispose();
-                _pool = new List<ConnectionMultiplexer>();
+                    cnn.Close();
+                _pool = null;
             }
         }
 
