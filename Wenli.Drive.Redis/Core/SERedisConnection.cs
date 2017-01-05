@@ -49,7 +49,7 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         public void Dispose()
         {
-            _cnn.Close();
+            _cnn = null;
         }
 
         /// <summary>
