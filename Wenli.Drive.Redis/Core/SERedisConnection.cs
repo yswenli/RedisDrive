@@ -58,6 +58,8 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         public IDatabase GetDatabase()
         {
+
+
             return _cnn.GetDatabase(_dbIndex);
         }
 

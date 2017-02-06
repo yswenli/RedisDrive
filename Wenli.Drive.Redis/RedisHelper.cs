@@ -45,10 +45,11 @@ namespace Wenli.Drive.Redis
 
         /// <summary>
         ///     初始化
+        ///     使用RedisHelperBuilder.Build请不要调用此方法
         /// </summary>
         /// <param name="section"></param>
         /// <returns></returns>
-        public void Init(string section)
+        internal void Init(string section)
         {
             _redisHelper.Init(section);
         }

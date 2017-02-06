@@ -27,31 +27,44 @@ namespace Wenli.Drive.Redis.Core
     internal class SERedisConnectPool : IDisposable
     {
         private int _curConnectionPos;
+
         private readonly bool _isDisposed = false;
+
         private List<ConnectionMultiplexer> _pool = new List<ConnectionMultiplexer>();
+
+        private object locker = new object();
 
         public SERedisConnectPool(string connectionStr, int poolSize)
         {
-            for (var i = 0; i < poolSize; i++)
-                _pool.Add(ConnectionMultiplexer.Connect(connectionStr));
-        }
-
-        public SERedisConnectPool(IList<ConnectionMultiplexer> connections)
-        {
-            if (connections == null)
-                throw new ArgumentNullException("SERedisConnectPool.ctor.connections");
-
-            _pool.AddRange(connections);
+            lock (locker)
+            {
+                if (_pool.Count == 0)
+                    for (var i = 0; i < poolSize; i++)
+                    {
+                        try
+                        {
+                            var cnn = ConnectionMultiplexer.Connect(connectionStr);
+                            _pool.Add(cnn);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(string.Format("初始化连接池建立连接（{0}）失败：{1}", connectionStr, ex.Message));
+                        }
+                    }
+            }
         }
 
         public int PoolSize
         {
-            get { return _pool.Count; }
+            get
+            {
+                return _pool.Count;
+            }
         }
 
         public void Dispose()
         {
-            lock (this)
+            lock (locker)
             {
                 if (_isDisposed)
                     return;
@@ -83,7 +96,7 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         private ConnectionMultiplexer FixConnection(int index)
         {
-            lock (this)
+            lock (locker)
             {
                 // 从指定位置取出，判断是否被其它线程修复好了
                 var cnn = _pool[index];
@@ -92,10 +105,19 @@ namespace Wenli.Drive.Redis.Core
 
                 var old = cnn;
                 var config = old.Configuration;
-                cnn = ConnectionMultiplexer.Connect(config);
-                _pool[index] = cnn;
-                old.Dispose();
-
+                try
+                {
+                    cnn = ConnectionMultiplexer.Connect(config);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("重新建立连接（{0}）失败：{1}", config, ex.Message));
+                }
+                finally
+                {
+                    _pool[index] = cnn;
+                    old.Close();
+                }
                 return cnn;
             }
         }
@@ -111,7 +133,7 @@ namespace Wenli.Drive.Redis.Core
                 return 0;
 
             Interlocked.Add(ref _curConnectionPos, 1);
-            var next = _curConnectionPos%PoolSize;
+            var next = _curConnectionPos % PoolSize;
             return Math.Abs(next);
         }
     }

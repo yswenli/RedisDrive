@@ -26,10 +26,11 @@ namespace Wenli.Drive.Redis.Core
     public class SESentinelClient
     {
         /// <summary>
-        ///     主从切换通知事件委托
+        /// 主从切换通知事件委托
         /// </summary>
         /// <param name="section"></param>
-        /// <param name="cnn"></param>
+        /// <param name="newconnectionString"></param>
+        /// <param name="poolSize"></param>
         public delegate void OnRedisServerChangedHander(string section, string newconnectionString, int poolSize);
 
         private readonly string _Section = string.Empty;
@@ -37,10 +38,11 @@ namespace Wenli.Drive.Redis.Core
         private ISubscriber _Sentinelsub;
 
         /// <summary>
-        ///     初始化哨兵帮助类
+        /// 初始化哨兵类
         /// </summary>
         /// <param name="section"></param>
         /// <param name="connectionStr"></param>
+        /// <param name="poolSize"></param>
         public SESentinelClient(string section, string connectionStr, int poolSize)
         {
             if (SentinelConnection != null)
@@ -49,21 +51,29 @@ namespace Wenli.Drive.Redis.Core
             SentinelConfig = ConfigurationOptions.Parse(connectionStr);
             SentinelConfig.TieBreaker = string.Empty;
             SentinelConfig.CommandMap = CommandMap.Sentinel;
-
             PoolSize = poolSize;
         }
 
         /// <summary>
         ///     哨兵配置
         /// </summary>
-        public ConfigurationOptions SentinelConfig { get; }
+        public ConfigurationOptions SentinelConfig
+        {
+            get;
+        }
 
         /// <summary>
         ///     sentinel连接器
         /// </summary>
-        public ConnectionMultiplexer SentinelConnection { get; private set; }
+        public ConnectionMultiplexer SentinelConnection
+        {
+            get; private set;
+        }
 
-        public int PoolSize { get; }
+        public int PoolSize
+        {
+            get;
+        }
 
         /// <summary>
         ///     主从切换通知事件
@@ -71,10 +81,11 @@ namespace Wenli.Drive.Redis.Core
         public event OnRedisServerChangedHander OnRedisServerChanged;
 
         /// <summary>
-        ///     触发主从切换通知事件
+        /// 触发主从切换通知事件
         /// </summary>
         /// <param name="section"></param>
-        /// <param name="cnn"></param>
+        /// <param name="newconnectionString"></param>
+        /// <param name="poolsize"></param>
         protected void RaiseOnRedisServerChanged(string section, string newconnectionString, int poolsize)
         {
             if (OnRedisServerChanged != null)
@@ -96,7 +107,7 @@ namespace Wenli.Drive.Redis.Core
                 if (server.IsConnected)
                     return server;
             }
-            throw new Exception("没有可以连接的服务器");
+            throw new Exception("找不到可以连接的活动的哨兵服务器");
         }
 
         /// <summary>
@@ -134,26 +145,33 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         private string GetConnectionStringFromSentinel()
         {
-            var activeSentinelServer = GetActiveServer(SentinelConnection, SentinelConnection.GetEndPoints());
-            var masterConnectionInfo = activeSentinelServer.SentinelGetMasterAddressByName(SentinelConfig.ServiceName);
-            var slaveConnectionInfos =
-                SanitizeHostsConfig(activeSentinelServer.SentinelSlaves(SentinelConfig.ServiceName));
-
-            var redisConfigs = new ConfigurationOptions
+            try
             {
-                AllowAdmin = true,
-                DefaultDatabase = SentinelConfig.DefaultDatabase,
-                ConnectRetry = SentinelConfig.ConnectRetry,
-                ConnectTimeout = SentinelConfig.ConnectTimeout,
-                KeepAlive = SentinelConfig.KeepAlive,
-                SyncTimeout = SentinelConfig.SyncTimeout,
-                AbortOnConnectFail = false
-            };
-            redisConfigs.EndPoints.Add(masterConnectionInfo);
-            foreach (var slaveInfo in slaveConnectionInfos)
-                redisConfigs.EndPoints.Add(slaveInfo);
+                var activeSentinelServer = GetActiveServer(SentinelConnection, SentinelConnection.GetEndPoints());
+                var masterConnectionInfo = activeSentinelServer.SentinelGetMasterAddressByName(SentinelConfig.ServiceName);
+                var slaveConnectionInfos =
+                    SanitizeHostsConfig(activeSentinelServer.SentinelSlaves(SentinelConfig.ServiceName));
 
-            return redisConfigs.ToString();
+                var redisConfigs = new ConfigurationOptions
+                {
+                    AllowAdmin = true,
+                    DefaultDatabase = SentinelConfig.DefaultDatabase,
+                    ConnectRetry = SentinelConfig.ConnectRetry,
+                    ConnectTimeout = SentinelConfig.ConnectTimeout,
+                    KeepAlive = SentinelConfig.KeepAlive,
+                    SyncTimeout = SentinelConfig.SyncTimeout,
+                    AbortOnConnectFail = false
+                };
+                redisConfigs.EndPoints.Add(masterConnectionInfo);
+                foreach (var slaveInfo in slaveConnectionInfos)
+                    redisConfigs.EndPoints.Add(slaveInfo);
+
+                return redisConfigs.ToString();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("SESentinelClient.GetConnectionStringFromSentinel 连接到哨兵服务器（{0}）失败：{1}", SentinelConfig, ex.Message));
+            }
         }
 
         /// <summary>
@@ -163,15 +181,27 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         public string Start()
         {
-            SentinelConnection = ConnectionMultiplexer.Connect(SentinelConfig);
-            _Sentinelsub = SentinelConnection.GetSubscriber();
-
-            _Sentinelsub.SubscribeAsync("+switch-master", (channle, msg) =>
+            var redisConnectionString = string.Empty;
+            try
             {
-                var newConnectionString = GetConnectionStringFromSentinel();
-                RaiseOnRedisServerChanged(_Section, newConnectionString, PoolSize);
-            });
-            return GetConnectionStringFromSentinel();
+                SentinelConnection = ConnectionMultiplexer.Connect(SentinelConfig);
+
+                redisConnectionString = GetConnectionStringFromSentinel();
+
+                _Sentinelsub = SentinelConnection.GetSubscriber();
+
+                _Sentinelsub.SubscribeAsync("+switch-master", (channle, msg) =>
+                {
+                    redisConnectionString = GetConnectionStringFromSentinel();
+                    RaiseOnRedisServerChanged(_Section, redisConnectionString, PoolSize);
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("SESentinelClient.Start 连接到哨兵服务器（{0}）失败：{1}", SentinelConfig, ex.Message));
+            }
+
+            return redisConnectionString;
         }
     }
 }

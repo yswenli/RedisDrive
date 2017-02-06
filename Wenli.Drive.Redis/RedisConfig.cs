@@ -145,7 +145,7 @@ namespace Wenli.Drive.Redis
         /// <summary>
         ///     连接保持(s)
         /// </summary>
-        [ConfigurationProperty("KeepAlive", IsRequired = false, DefaultValue = 30)]
+        [ConfigurationProperty("KeepAlive", IsRequired = false, DefaultValue = 180)]
         public int KeepAlive
         {
             get
@@ -161,7 +161,7 @@ namespace Wenli.Drive.Redis
         /// <summary>
         ///     连接超时(ms)
         /// </summary>
-        [ConfigurationProperty("ConnectTimeout", IsRequired = false, DefaultValue = 10 * 1000)]
+        [ConfigurationProperty("ConnectTimeout", IsRequired = false, DefaultValue = 180 * 1000)]
         public int ConnectTimeout
         {
             get
@@ -253,6 +253,24 @@ namespace Wenli.Drive.Redis
             set
             {
                 base["CommandTimeout"] = value;
+            }
+        }
+
+        /// <summary>
+        /// 扩展
+        /// 有一些redis因为禁用了某些命令需要添加如下部分
+        /// $CLIENT=,$CLUSTER=,$CONFIG=,$ECHO=,$INFO=,$PING=
+        /// </summary>
+        [ConfigurationProperty("Extention", IsRequired = false, DefaultValue = "")]
+        public string Extention
+        {
+            get
+            {
+                return (string)base["Extention"];
+            }
+            set
+            {
+                base["Extention"] = value;
             }
         }
 

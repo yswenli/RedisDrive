@@ -84,13 +84,17 @@ namespace Wenli.Drive.Redis.Core
                     {
                         retryCountMsg = string.Format("RedisConnectionException Redis<T>连接异常，等待随后重试。当前已重试：{0};ex:{1}", counter, ex.Message);
                     }
+                    else if (ex is RedisServerException && ex.Message.Contains("MOVED"))
+                    {
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> MOVED 异常，等待随后重试。当前已重试：{0};ex:{1}", counter, ex.Message);
+                    }
                     else
                     {
                         throw ex;
                     }
 
                     // 将重试写成错误，引起重视
-                    Log4NetHelper.WriteErrLog(retryCountMsg, ex);
+                    Log4NetHelper.WriteLog(retryCountMsg);
 
                     if (counter > _busyRetry)
                         throw ex;  // 大于重试次数，将直接抛出去
@@ -130,8 +134,8 @@ namespace Wenli.Drive.Redis.Core
                         throw ex;
                     }
 
-                    // 将重试写成错误，引起重视
-                    Log4NetHelper.WriteErrLog(retryCountMsg, ex);
+                    // 将重试写成info，引起重视
+                    Log4NetHelper.WriteLog(retryCountMsg);
 
                     if (counter > _busyRetry)
                         throw ex;  // 大于重试次数，将直接抛出去
@@ -323,7 +327,6 @@ namespace Wenli.Drive.Redis.Core
                 return keys;
             });
         }
-
         /// <summary>
         ///     获取key
         /// </summary>
@@ -541,7 +544,16 @@ namespace Wenli.Drive.Redis.Core
             {
                 using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
                 {
-                    return cnn.GetDatabase().HashExists(hashId, key);
+                    try
+                    {
+
+                        return cnn.GetDatabase().HashExists(hashId, key);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(string.Format("HashExists异常，参数：{0},{1},{2},{3},异常信息：{4}", _sectionName, _dbIndex, hashId, key, ex.Message));
+                    }
                 }
             });
         }

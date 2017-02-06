@@ -17,16 +17,44 @@ using System.Collections.Concurrent;
 using StackExchange.Redis;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Text;
 
 namespace Wenli.Drive.Redis.Core
 {
     /// <summary>
     ///     对connectionpool的管理
     /// </summary>
-    internal class SERedisConnectionPoolManager
+    internal static class SERedisConnectionPoolManager
     {
         private static readonly ConcurrentDictionary<string, SERedisConnectPool> _ConnectorCollection =
             new ConcurrentDictionary<string, SERedisConnectPool>();
+
+        private static object locker = new object();
+
+        static SERedisConnectionPoolManager()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1000);
+
+                    var keys = _ConnectorCollection.Keys;
+
+                    StringBuilder sb = new StringBuilder();
+
+                    foreach (var key in keys)
+                    {
+                        SERedisConnectPool pool = null;
+                        _ConnectorCollection.TryGetValue(key, out pool);
+                        var con = pool.GetConnection();
+                        sb.AppendFormat("{0}:{1}", key, con.Configuration);
+                        sb.AppendLine();
+                    }
+                }
+            });
+        }
+
 
         /// <summary>
         ///     初始化池
@@ -34,29 +62,38 @@ namespace Wenli.Drive.Redis.Core
         /// <param name="sectionName"></param>
         /// <param name="connectionStr"></param>
         /// <param name="poolSize"></param>
-        public static void Create(string sectionName, string connectionStr, int poolSize = 10)
+        internal static void Create(string sectionName, string connectionStr, int poolSize = 1)
         {
-            if (_ConnectorCollection.ContainsKey(sectionName))
-                return;
+            lock (locker)
+            {
+                if (_ConnectorCollection.ContainsKey(sectionName))
+                    return;
 
-            Update(sectionName, connectionStr, poolSize);
+                Update(sectionName, connectionStr, poolSize);
+            }
         }
 
-        internal static void Update(string sectionName, string connectionStr, int poolSize = 10)
+        internal static void Update(string sectionName, string connectionStr, int poolSize = 1)
         {
-            Func<SERedisConnectPool> addPoolFunc = () => { return new SERedisConnectPool(connectionStr, poolSize); };
-
-            _ConnectorCollection.AddOrUpdate(sectionName, key => addPoolFunc(), (x, oldPool) =>
+            lock (locker)
             {
-                // 延迟100秒卸载,避免卸载太快造成无法使用问题
-                new Task(() =>
+                Func<SERedisConnectPool> addPoolFunc = () =>
                 {
-                    Thread.Sleep(100000);
-                    oldPool.Dispose();
-                }).Start();
+                    return new SERedisConnectPool(connectionStr, poolSize);
+                };
 
-                return addPoolFunc();
-            });
+                _ConnectorCollection.AddOrUpdate(sectionName, key => addPoolFunc(), (x, oldPool) =>
+                {
+                    // 延迟100秒卸载,避免卸载太快造成无法使用问题
+                    new Task(() =>
+                    {
+                        Thread.Sleep(100000);
+                        oldPool.Dispose();
+                    }).Start();
+
+                    return addPoolFunc();
+                });
+            }
         }
 
         /// <summary>
@@ -88,11 +125,15 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         public static SERedisConnectPool GetPool(string sectionName)
         {
+            //IEMWorks.Util.Log4NetUtil.WriteErrLog("打印多路复用器配置信息", new Exception("打印多路复用器配置信息"), sectionName, _cnn.Configuration);
+
             SERedisConnectPool pool = null;
             if (!_ConnectorCollection.TryGetValue(sectionName, out pool))
                 throw new Exception(string.Format("Redis Section [{0}] 没有被初始化", sectionName));
 
             return pool;
         }
+
+
     }
 }

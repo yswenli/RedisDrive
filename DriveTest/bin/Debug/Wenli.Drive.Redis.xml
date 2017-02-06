@@ -155,10 +155,11 @@
         </member>
         <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.sentinel_OnRedisServerChanged(System.String,System.String,System.Int32)">
             <summary>
-                哨兵监测
+            哨兵监测事件
             </summary>
             <param name="section"></param>
-            <param name="cnn"></param>
+            <param name="newConnectionString"></param>
+            <param name="poolSize"></param>
         </member>
         <member name="T:Wenli.Drive.Redis.Core.SERedisOperation">
             <summary>
@@ -750,17 +751,19 @@
         </member>
         <member name="T:Wenli.Drive.Redis.Core.SESentinelClient.OnRedisServerChangedHander">
             <summary>
-                主从切换通知事件委托
+            主从切换通知事件委托
             </summary>
             <param name="section"></param>
-            <param name="cnn"></param>
+            <param name="newconnectionString"></param>
+            <param name="poolSize"></param>
         </member>
         <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.#ctor(System.String,System.String,System.Int32)">
             <summary>
-                初始化哨兵帮助类
+            初始化哨兵类
             </summary>
             <param name="section"></param>
             <param name="connectionStr"></param>
+            <param name="poolSize"></param>
         </member>
         <member name="P:Wenli.Drive.Redis.Core.SESentinelClient.SentinelConfig">
             <summary>
@@ -779,10 +782,11 @@
         </member>
         <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.RaiseOnRedisServerChanged(System.String,System.String,System.Int32)">
             <summary>
-                触发主从切换通知事件
+            触发主从切换通知事件
             </summary>
             <param name="section"></param>
-            <param name="cnn"></param>
+            <param name="newconnectionString"></param>
+            <param name="poolsize"></param>
         </member>
         <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.GetActiveServer(StackExchange.Redis.ConnectionMultiplexer,System.Net.EndPoint[])">
             <summary>
@@ -1483,6 +1487,13 @@
                 命令超时时间 (ms)
             </summary>
         </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.Extention">
+            <summary>
+            扩展
+            有一些redis因为禁用了某些命令需要添加如下部分
+            $CLIENT=,$CLUSTER=,$CONFIG=,$ECHO=,$INFO=,$PING=
+            </summary>
+        </member>
         <member name="M:Wenli.Drive.Redis.RedisConfig.GetConfig">
             <summary>
                 获取默认redis配置类
@@ -1527,6 +1538,7 @@
         <member name="M:Wenli.Drive.Redis.RedisHelper.Init(System.String)">
             <summary>
                 初始化
+                使用RedisHelperBuilder.Build请不要调用此方法
             </summary>
             <param name="section"></param>
             <returns></returns>
