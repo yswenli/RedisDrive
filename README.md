@@ -90,6 +90,9 @@ app.config(web.config)配置如下：
 &nbsp; &lt;/runtime&gt;<br />
 &lt;/configuration&gt;<br />
 
+也可以使用项目中的测试工具对集群进行相关测试
+
+<img src="https://raw.githubusercontent.com/yswenli/RedisDrive/11e1e4c4303df3ba6d7847d4d310e400f3a26933/RedisDriveTest/2017-02-07_095814.png" alt="wenli.drive.redis"/>
 
 实例代码：
 
