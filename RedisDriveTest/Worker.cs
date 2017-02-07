@@ -194,6 +194,7 @@ namespace RedisDriveTest
                 {
                     DoA(form, cnnStr, types);
                 });
+                _redisHelper1.Dispose();
             }
             else
             {
@@ -299,13 +300,13 @@ namespace RedisDriveTest
                     for (int i = 1; i <= 10; i++)
                     {
                         _redisHelper1.Publish(prefix + "happy", "this is a test message" + i);
-                        Thread.Sleep(400);
+                        Thread.Sleep(10);
                     }
-                    try
-                    {
-                        _redisHelper1.Unsubscribe(prefix + "happy");
-                    }
-                    catch { }
+                    //try
+                    //{
+                    //    _redisHelper1.Unsubscribe(prefix + "happy");
+                    //}
+                    //catch { }
                 }
                 #endregion
             }

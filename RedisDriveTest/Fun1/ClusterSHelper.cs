@@ -19,7 +19,7 @@ using Wenli.Drive.Redis.Tool;
 
 namespace RedisDriveTest.Fun1
 {
-    public class ClusterSHelper
+    public class ClusterSHelper:IDisposable
     {
         private static ConnectionMultiplexer _cnn;
 
@@ -1173,5 +1173,11 @@ namespace RedisDriveTest.Fun1
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            if (_cnn != null)
+                _cnn.Close();
+        }
     }
 }
