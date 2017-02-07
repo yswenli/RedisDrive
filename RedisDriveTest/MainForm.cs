@@ -53,5 +53,79 @@ namespace RedisDriveTest
         {
             Worker.Work(this);
         }
+
+        #region 菜单
+        private void contextMenuStrip1_Opened(object sender, EventArgs e)
+        {
+            var txt = ((TextBox)((ContextMenuStrip)sender).SourceControl);
+
+            selectAllToolStripMenuItem.Enabled = true;
+            if (string.IsNullOrWhiteSpace(txt.Text))
+                selectAllToolStripMenuItem.Enabled = false;
+
+            copyToolStripMenuItem.Enabled = true;
+            if (string.IsNullOrWhiteSpace(txt.SelectedText))
+                copyToolStripMenuItem.Enabled = false;
+
+            pasteToolStripMenuItem.Enabled = false;
+            if (txt.Name == "textBox1")
+                pasteToolStripMenuItem.Enabled = true;
+        }
+        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var txt = ((TextBox)((ContextMenuStrip)(((ToolStripMenuItem)sender)).GetCurrentParent()).SourceControl);
+            txt.SelectAll();
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var txt = ((TextBox)((ContextMenuStrip)(((ToolStripMenuItem)sender)).GetCurrentParent()).SourceControl);
+                if (!string.IsNullOrWhiteSpace(txt.SelectedText))
+                    Clipboard.SetText(txt.SelectedText);
+            }
+            catch
+            {
+
+            }
+
+        }
+
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var txt = ((TextBox)((ContextMenuStrip)(((ToolStripMenuItem)sender)).GetCurrentParent()).SourceControl);
+                int index = txt.SelectionStart;
+                txt.Text = txt.Text.Insert(index, Clipboard.GetText());
+            }
+            catch
+            {
+
+            }
+        }
+
+        #endregion
+
+        #region 快捷键
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((e.Modifiers == Keys.Control) && (e.KeyCode == Keys.A))
+                ((TextBox)sender).SelectAll();
+        }
+
+        private void textBox2_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((e.Modifiers == Keys.Control) && (e.KeyCode == Keys.A))
+                ((TextBox)sender).SelectAll();
+        }
+
+        private void textBox3_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((e.Modifiers == Keys.Control) && (e.KeyCode == Keys.A))
+                ((TextBox)sender).SelectAll();
+        }
+        #endregion
     }
 }
