@@ -52,6 +52,12 @@
             <param name="patten"></param>
             <returns></returns>
         </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.GetServerInfo">
+            <summary>
+            获取服务器信息
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Wenli.Drive.Redis.Core.SERedisConnectionPoolManager">
             <summary>
                 对connectionpool的管理
@@ -179,6 +185,12 @@
             <param name="dbIndex"></param>
             <param name="busyRetry"></param>
             <param name="busyRetryWaitMS"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetServerInfo">
+            <summary>
+            获取服务器信息
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeyExists(System.String)">
             <summary>

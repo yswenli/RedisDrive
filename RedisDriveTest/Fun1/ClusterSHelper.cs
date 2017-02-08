@@ -40,6 +40,28 @@ namespace RedisDriveTest.Fun1
 
         private const string DefaultOrder = "desc";
 
+        /// <summary>
+        /// 获取服务器信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetServerInfo()
+        {
+            var info = string.Empty;
+            try
+            {
+                var eps = _cnn.GetEndPoints(true);
+                if (eps != null && eps.Length > 0)
+                {
+                    foreach (var ep in _cnn.GetEndPoints(true))
+                    {
+                        info += string.Format("{0}{1}{2}{1}", ep.AddressFamily.ToString(),Environment.NewLine, _cnn.GetServer(ep).InfoRaw());
+                    }
+                }
+            }
+            catch { }
+            return info;
+        }
+
         #region Keys
 
         /// <summary>

@@ -49,5 +49,14 @@ namespace RedisDriveTest.Fun2
                 return _helper;
             }
         }
+
+        /// <summary>
+        /// 获取服务器信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetServerInfo()
+        {
+            return _helper.GetRedisOperation().GetServerInfo();
+        }
     }
 }

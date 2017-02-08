@@ -159,6 +159,8 @@ namespace RedisDriveTest
                         else
                             _redisHelper1 = new ClusterSHelper(cnnStr);
 
+                        GetRSInfo(form, isMyDrive);
+
                         WriteLog(form, "初始化完成，正在并行处理任务...");
 
                         //开始并行处理任务
@@ -183,6 +185,30 @@ namespace RedisDriveTest
             }
         }
 
+
+        #region info
+        public static void GetRSInfo(MainForm form, bool isMyDrive)
+        {
+
+            if (form.InvokeRequired)
+            {
+                form.BeginInvoke(new Action<MainForm, bool>(GetRSInfo), form, isMyDrive);
+            }
+            else
+            {
+                string info = string.Empty;
+                if (isMyDrive)
+                {
+                    info = _redisHelper2.GetServerInfo();
+                }
+                else
+                {
+                    info = _redisHelper1.GetServerInfo();
+                }
+                form.textBox4.Text = info;
+            }
+        }
+        #endregion
 
 
         #region do
@@ -277,7 +303,7 @@ namespace RedisDriveTest
                 if (types.Contains("ZSet"))
                 {
                     WriteLog(form, "sortedset test");
-                    WriteLog(form, string.Format("sortedset add :{0}", _redisHelper1.SortedSetAdd(prefix + "sortedset", "sortedset", 0)));
+                    WriteLog(form, string.Format("sortedset add :{0}", _redisHelper1.SortedSetAdd(prefix + "sortedset", "sortedset", 1)));
                     var list = _redisHelper1.GetSortedSetRangeByRankWithSocres(prefix + "sortedset", 0, 10000, 1, 9999, true);
                     WriteLog(form, string.Format("sortedset getlist :{0}", list));
                     WriteLog(form, string.Format("sortedset remove :{0}", _redisHelper1.RemoveItemFromSortedSet(prefix + "sortedset", "sortedset")));
@@ -388,7 +414,7 @@ namespace RedisDriveTest
                 if (types.Contains("ZSet"))
                 {
                     WriteLog(form, "sortedset test");
-                    WriteLog(form, string.Format("sortedset add :{0}", _redisHelper2.Helper.GetRedisOperation().SortedSetAdd(prefix + "sortedset", "sortedset", 0)));
+                    WriteLog(form, string.Format("sortedset add :{0}", _redisHelper2.Helper.GetRedisOperation().SortedSetAdd(prefix + "sortedset", "sortedset", 1)));
                     var list = _redisHelper2.Helper.GetRedisOperation().GetSortedSetRangeByRankWithSocres(prefix + "sortedset", 0, 10000, 1, 9999, true);
                     WriteLog(form, string.Format("sortedset getlist :{0}", list));
                     WriteLog(form, string.Format("sortedset remove :{0}", _redisHelper2.Helper.GetRedisOperation().RemoveItemFromSortedSet(prefix + "sortedset", "sortedset")));
