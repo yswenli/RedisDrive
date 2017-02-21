@@ -46,3 +46,4 @@ E:\百度云\Develop\Redis\RedisDrive\Wenli.Drive.Redis\bin\Debug\System.Threadi
 E:\百度云\Develop\Redis\RedisDrive\Wenli.Drive.Redis\obj\Debug\Wenli.Drive.Redis.csproj.App.config
 E:\百度云\Develop\Redis\RedisDrive\Wenli.Drive.Redis\obj\Debug\Wenli.Drive.Redis.dll
 E:\百度云\Develop\Redis\RedisDrive\Wenli.Drive.Redis\obj\Debug\Wenli.Drive.Redis.pdb
+E:\百度云\Develop\Redis\RedisDrive\Wenli.Drive.Redis\obj\Debug\Wenli.Drive.Redis.csprojResolveAssemblyReference.cache

@@ -24,6 +24,8 @@ namespace Wenli.Drive.Redis.Interface
     /// </summary>
     public interface IRedisOperation
     {
+        string GetServerInfo();
+
         #region Keys
 
         /// <summary>

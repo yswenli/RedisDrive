@@ -53,6 +53,31 @@ namespace Wenli.Drive.Redis
         {
             _redisHelper.Init(section);
         }
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="sectionName"></param>
+        /// <param name="type"></param>
+        /// <param name="master"></param>
+        /// <param name="password"></param>
+        /// <param name="serviceName"></param>
+        /// <param name="poolSize"></param>
+        /// <param name="busyRetry"></param>
+        /// <param name="busyRetryWaitMS"></param>
+        internal void Init(string sectionName, int type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
+        {
+            _redisHelper.Init(sectionName, type, master, password, serviceName, poolSize, busyRetry, busyRetryWaitMS);
+        }
+
+        /// <summary>
+        ///     初始化
+        ///     使用RedisHelperBuilder.Build请不要调用此方法
+        /// </summary>
+        /// <param name="config"></param>
+        internal void Init(RedisConfig config)
+        {
+            _redisHelper.Init(config);
+        }
 
         /// <summary>
         ///     redis操作

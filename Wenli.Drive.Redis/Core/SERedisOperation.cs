@@ -146,6 +146,18 @@ namespace Wenli.Drive.Redis.Core
 
         #endregion
 
+        /// <summary>
+        /// 获取服务器信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetServerInfo()
+        {
+            using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+            {
+                return cnn.GetServerInfo();
+            }
+        }
+
         #region Keys
 
         /// <summary>

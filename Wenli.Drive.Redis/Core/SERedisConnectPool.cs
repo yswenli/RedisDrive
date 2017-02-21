@@ -32,25 +32,31 @@ namespace Wenli.Drive.Redis.Core
 
         private List<ConnectionMultiplexer> _pool = new List<ConnectionMultiplexer>();
 
-        private object locker = new object();
+        private static object locker = new object();
 
         public SERedisConnectPool(string connectionStr, int poolSize)
         {
-            lock (locker)
+
+            if (_pool.Count == 0)
             {
-                if (_pool.Count == 0)
-                    for (var i = 0; i < poolSize; i++)
+                lock (locker)
+                {
+                    if (_pool.Count == 0)
                     {
-                        try
+                        for (var i = 0; i < poolSize; i++)
                         {
-                            var cnn = ConnectionMultiplexer.Connect(connectionStr);
-                            _pool.Add(cnn);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception(string.Format("初始化连接池建立连接（{0}）失败：{1}", connectionStr, ex.Message));
+                            try
+                            {
+                                var cnn = ConnectionMultiplexer.Connect(connectionStr);
+                                _pool.Add(cnn);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new Exception(string.Format("初始化连接池建立连接（{0}）失败：{1}", connectionStr, ex.Message));
+                            }
                         }
                     }
+                }
             }
         }
 
@@ -96,13 +102,13 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         private ConnectionMultiplexer FixConnection(int index)
         {
+            // 从指定位置取出，判断是否被其它线程修复好了
+            var cnn = _pool[index];
+            if (cnn.IsConnected)
+                return cnn;
+
             lock (locker)
             {
-                // 从指定位置取出，判断是否被其它线程修复好了
-                var cnn = _pool[index];
-                if (cnn.IsConnected)
-                    return cnn;
-
                 var old = cnn;
                 var config = old.Configuration;
                 try

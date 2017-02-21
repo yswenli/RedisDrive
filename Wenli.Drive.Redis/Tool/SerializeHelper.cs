@@ -22,7 +22,7 @@ namespace Wenli.Drive.Redis.Tool
     /// <summary>
     /// 序列化类
     /// </summary>
-    internal static class SerializeHelper
+    public static class SerializeHelper
     {
         /// <summary>
         ///     newton.json序列化,日志参数专用

@@ -26,6 +26,25 @@ namespace Wenli.Drive.Redis.Interface
         void Init(string section);
 
         /// <summary>
+        ///     初始化池
+        /// </summary>
+        /// <param name="config"></param>
+        void Init(RedisConfig config);
+
+        /// <summary>
+        /// 初始化池
+        /// </summary>
+        /// <param name="sectionName"></param>
+        /// <param name="type"></param>
+        /// <param name="master"></param>
+        /// <param name="password"></param>
+        /// <param name="serviceName"></param>
+        /// <param name="poolSize"></param>
+        /// <param name="busyRetry"></param>
+        /// <param name="busyRetryWaitMS"></param>
+        void Init(string sectionName, int type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000);
+
+        /// <summary>
         ///     redis操作
         /// </summary>
         IRedisOperation GetRedisOperation(int dbIndex = -1);

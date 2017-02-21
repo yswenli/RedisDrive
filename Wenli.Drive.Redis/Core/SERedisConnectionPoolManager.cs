@@ -31,31 +31,6 @@ namespace Wenli.Drive.Redis.Core
 
         private static object locker = new object();
 
-        static SERedisConnectionPoolManager()
-        {
-            Task.Factory.StartNew(() =>
-            {
-                while (true)
-                {
-                    Thread.Sleep(1000);
-
-                    var keys = _ConnectorCollection.Keys;
-
-                    StringBuilder sb = new StringBuilder();
-
-                    foreach (var key in keys)
-                    {
-                        SERedisConnectPool pool = null;
-                        _ConnectorCollection.TryGetValue(key, out pool);
-                        var con = pool.GetConnection();
-                        sb.AppendFormat("{0}:{1}", key, con.Configuration);
-                        sb.AppendLine();
-                    }
-                }
-            });
-        }
-
-
         /// <summary>
         ///     初始化池
         /// </summary>
@@ -64,36 +39,30 @@ namespace Wenli.Drive.Redis.Core
         /// <param name="poolSize"></param>
         internal static void Create(string sectionName, string connectionStr, int poolSize = 1)
         {
-            lock (locker)
-            {
-                if (_ConnectorCollection.ContainsKey(sectionName))
-                    return;
+            if (_ConnectorCollection.ContainsKey(sectionName))
+                return;
 
-                Update(sectionName, connectionStr, poolSize);
-            }
+            Update(sectionName, connectionStr, poolSize);
         }
 
         internal static void Update(string sectionName, string connectionStr, int poolSize = 1)
         {
-            lock (locker)
+            Func<SERedisConnectPool> addPoolFunc = () =>
             {
-                Func<SERedisConnectPool> addPoolFunc = () =>
-                {
-                    return new SERedisConnectPool(connectionStr, poolSize);
-                };
+                return new SERedisConnectPool(connectionStr, poolSize);
+            };
 
-                _ConnectorCollection.AddOrUpdate(sectionName, key => addPoolFunc(), (x, oldPool) =>
+            _ConnectorCollection.AddOrUpdate(sectionName, key => addPoolFunc(), (x, oldPool) =>
+            {
+                // 延迟100秒卸载,避免卸载太快造成无法使用问题
+                new Task(() =>
                 {
-                    // 延迟100秒卸载,避免卸载太快造成无法使用问题
-                    new Task(() =>
-                    {
-                        Thread.Sleep(100000);
-                        oldPool.Dispose();
-                    }).Start();
+                    Thread.Sleep(100000);
+                    oldPool.Dispose();
+                }).Start();
 
-                    return addPoolFunc();
-                });
-            }
+                return addPoolFunc();
+            });
         }
 
         /// <summary>

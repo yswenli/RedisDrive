@@ -101,5 +101,27 @@ namespace Wenli.Drive.Redis.Core
             return _cnn.GetServer(_cnn.GetEndPoints()[0]).Keys(pattern: "*").Select(b => b.ToString()).ToList();
         }
 
+        /// <summary>
+        /// 获取服务器信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetServerInfo()
+        {
+            var info = string.Empty;
+            try
+            {
+                var eps = _cnn.GetEndPoints(true);
+                if (eps != null && eps.Length > 0)
+                {
+                    foreach (var ep in _cnn.GetEndPoints(true))
+                    {
+                        info += string.Format("{0}{1}{2}{1}", ep.AddressFamily.ToString(), Environment.NewLine, _cnn.GetServer(ep).InfoRaw());
+                    }
+                }
+            }
+            catch { }
+            return info;
+        }
+
     }
 }
