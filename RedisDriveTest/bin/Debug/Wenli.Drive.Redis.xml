@@ -140,6 +140,19 @@
             <param name="section"></param>
             <returns></returns>
         </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.Init(System.String,System.Int32,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            初始化
+            </summary>
+            <param name="sectionName"></param>
+            <param name="type"></param>
+            <param name="master"></param>
+            <param name="password"></param>
+            <param name="serviceName"></param>
+            <param name="poolSize"></param>
+            <param name="busyRetry"></param>
+            <param name="busyRetryWaitMS"></param>
+        </member>
         <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.GetRedisOperation(System.Int32)">
             <summary>
                 redis操作
@@ -769,13 +782,14 @@
             <param name="newconnectionString"></param>
             <param name="poolSize"></param>
         </member>
-        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.#ctor(System.String,System.String,System.Int32)">
+        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.#ctor(System.String,System.String,System.Int32,System.String)">
             <summary>
             初始化哨兵类
             </summary>
             <param name="section"></param>
             <param name="connectionStr"></param>
             <param name="poolSize"></param>
+            <param name="password"></param>
         </member>
         <member name="P:Wenli.Drive.Redis.Core.SESentinelClient.SentinelConfig">
             <summary>
@@ -785,6 +799,11 @@
         <member name="P:Wenli.Drive.Redis.Core.SESentinelClient.SentinelConnection">
             <summary>
                 sentinel连接器
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.Core.SESentinelClient.PoolSize">
+            <summary>
+            哨兵对应的节点的池大小
             </summary>
         </member>
         <member name="E:Wenli.Drive.Redis.Core.SESentinelClient.OnRedisServerChanged">
@@ -825,7 +844,6 @@
             <summary>
                 连接到指定的Sentinel，获取 master 和 slave 信息并返回。同时，注册相应的事件用于接收 sentinel 的通知消息
             </summary>
-            <param name="num"></param>
             <returns></returns>
         </member>
         <member name="T:Wenli.Drive.Redis.Data.PagedList`1">
@@ -843,6 +861,25 @@
                 初始化池
             </summary>
             <param name="section"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisHelper.Init(Wenli.Drive.Redis.RedisConfig)">
+            <summary>
+                初始化池
+            </summary>
+            <param name="config"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisHelper.Init(System.String,System.Int32,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            初始化池
+            </summary>
+            <param name="sectionName"></param>
+            <param name="type"></param>
+            <param name="master"></param>
+            <param name="password"></param>
+            <param name="serviceName"></param>
+            <param name="poolSize"></param>
+            <param name="busyRetry"></param>
+            <param name="busyRetryWaitMS"></param>
         </member>
         <member name="M:Wenli.Drive.Redis.Interface.IRedisHelper.GetRedisOperation(System.Int32)">
             <summary>
@@ -1554,6 +1591,26 @@
             </summary>
             <param name="section"></param>
             <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelper.Init(System.String,System.Int32,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            初始化
+            </summary>
+            <param name="sectionName"></param>
+            <param name="type"></param>
+            <param name="master"></param>
+            <param name="password"></param>
+            <param name="serviceName"></param>
+            <param name="poolSize"></param>
+            <param name="busyRetry"></param>
+            <param name="busyRetryWaitMS"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelper.Init(Wenli.Drive.Redis.RedisConfig)">
+            <summary>
+                初始化
+                使用RedisHelperBuilder.Build请不要调用此方法
+            </summary>
+            <param name="config"></param>
         </member>
         <member name="M:Wenli.Drive.Redis.RedisHelper.GetRedisOperation(System.Int32)">
             <summary>

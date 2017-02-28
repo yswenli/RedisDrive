@@ -41,6 +41,9 @@ namespace Wenli.Drive.Redis.Core
         //实例名称
         private string _sectionName;
 
+        private static object locker = new object();
+
+
         /// <summary>
         ///     释放
         /// </summary>
@@ -102,8 +105,6 @@ namespace Wenli.Drive.Redis.Core
             return new SERedisOperation(_sectionName, dbIndex, _BusyRetry, _BusyRetryWaitMS);
         }
 
-        private static object locker = new object();
-
         /// <summary>
         ///     初始化池，类似于构造方法
         ///     不要重复调用
@@ -119,30 +120,33 @@ namespace Wenli.Drive.Redis.Core
             if (string.IsNullOrWhiteSpace(_sectionName))
                 throw new Exception("redisConfig.SectionName不能为空");
 
-            if (SERedisConnectionPoolManager.Exists(_sectionName))
-                return;
-
-            var configStr = GenerateConnectionString(redisConfig);
-
-            if ((redisConfig.PoolSize < 1) || (redisConfig.PoolSize > 100))
-                redisConfig.PoolSize = 1;
-
-            //哨兵特殊处理
-            if (redisConfig.Type == 1)
+            lock (locker)
             {
-                var sentinel = new SESentinelClient(_sectionName, configStr, redisConfig.PoolSize);
+                if (SERedisConnectionPoolManager.Exists(_sectionName))
+                    return;
 
-                sentinel.OnRedisServerChanged += sentinel_OnRedisServerChanged;
+                var configStr = GenerateConnectionString(redisConfig);
 
-                var operateRedisConnecitonString = sentinel.Start();
+                if ((redisConfig.PoolSize < 1) || (redisConfig.PoolSize > 100))
+                    redisConfig.PoolSize = 1;
 
-                _SentinelPool.AddOrUpdate(_sectionName + "_" + redisConfig.ServiceName, sentinel, (x, y) => sentinel);
+                //哨兵特殊处理
+                if (redisConfig.Type == 1)
+                {
+                    var sentinel = new SESentinelClient(_sectionName, configStr, redisConfig.PoolSize, redisConfig.Password);
 
-                SERedisConnectionPoolManager.Create(_sectionName, operateRedisConnecitonString, redisConfig.PoolSize);
-            }
-            else
-            {
-                SERedisConnectionPoolManager.Create(_sectionName, configStr, redisConfig.PoolSize);
+                    sentinel.OnRedisServerChanged += sentinel_OnRedisServerChanged;
+
+                    var operateRedisConnecitonString = sentinel.Start();
+
+                    _SentinelPool.AddOrUpdate(_sectionName + "_" + redisConfig.ServiceName, sentinel, (x, y) => sentinel);
+
+                    SERedisConnectionPoolManager.Create(_sectionName, operateRedisConnecitonString, redisConfig.PoolSize);
+                }
+                else
+                {
+                    SERedisConnectionPoolManager.Create(_sectionName, configStr, redisConfig.PoolSize);
+                }
             }
         }
 
@@ -162,6 +166,8 @@ namespace Wenli.Drive.Redis.Core
                         configStr = string.Format("{0},{1},defaultDatabase={2}", redisConfig.Masters, redisConfig.Slaves, redisConfig.DefaultDatabase);
                     else
                         configStr = string.Format("{0},defaultDatabase={1}", redisConfig.Masters, redisConfig.DefaultDatabase);
+                    if (!string.IsNullOrWhiteSpace(redisConfig.Password))
+                        configStr += ",password=" + redisConfig.Password;
                     break;
                 case 1:
                     //哨兵
@@ -170,19 +176,21 @@ namespace Wenli.Drive.Redis.Core
                 case 2:
                     //集群
                     configStr = string.Format("{0}", redisConfig.Masters);
+                    if (!string.IsNullOrWhiteSpace(redisConfig.Password))
+                        configStr += ",password=" + redisConfig.Password;
                     break;
                 default:
                     if (!string.IsNullOrWhiteSpace(redisConfig.Slaves))
                         configStr = redisConfig.Masters + "," + redisConfig.Slaves;
                     else
                         configStr = redisConfig.Masters;
+
+                    if (!string.IsNullOrWhiteSpace(redisConfig.Password))
+                        configStr += ",password=" + redisConfig.Password;
                     break;
             }
             configStr +=
                 string.Format(",allowAdmin={0},connectRetry={1},connectTimeout={2},keepAlive={3},syncTimeout={4},abortConnect=false", redisConfig.AllowAdmin, redisConfig.ConnectRetry, redisConfig.ConnectTimeout, redisConfig.KeepAlive, redisConfig.CommandTimeout);
-
-            if (!string.IsNullOrWhiteSpace(redisConfig.Password))
-                configStr += ",password=" + redisConfig.Password;
 
             if (!string.IsNullOrWhiteSpace(redisConfig.Extention))
             {

@@ -37,13 +37,16 @@ namespace Wenli.Drive.Redis.Core
 
         private ISubscriber _Sentinelsub;
 
+        private string _password;
+
         /// <summary>
         /// 初始化哨兵类
         /// </summary>
         /// <param name="section"></param>
         /// <param name="connectionStr"></param>
         /// <param name="poolSize"></param>
-        public SESentinelClient(string section, string connectionStr, int poolSize)
+        /// <param name="password"></param>
+        public SESentinelClient(string section, string connectionStr, int poolSize, string password)
         {
             if (SentinelConnection != null)
                 SentinelConnection.Dispose();
@@ -52,6 +55,7 @@ namespace Wenli.Drive.Redis.Core
             SentinelConfig.TieBreaker = string.Empty;
             SentinelConfig.CommandMap = CommandMap.Sentinel;
             PoolSize = poolSize;
+            _password = password;
         }
 
         /// <summary>
@@ -70,6 +74,9 @@ namespace Wenli.Drive.Redis.Core
             get; private set;
         }
 
+        /// <summary>
+        /// 哨兵对应的节点的池大小
+        /// </summary>
         public int PoolSize
         {
             get;
@@ -162,6 +169,10 @@ namespace Wenli.Drive.Redis.Core
                     SyncTimeout = SentinelConfig.SyncTimeout,
                     AbortOnConnectFail = false
                 };
+                if (!string.IsNullOrEmpty(_password))
+                {
+                    redisConfigs.Password = _password;
+                }
                 redisConfigs.EndPoints.Add(masterConnectionInfo);
                 foreach (var slaveInfo in slaveConnectionInfos)
                     redisConfigs.EndPoints.Add(slaveInfo);
@@ -177,14 +188,22 @@ namespace Wenli.Drive.Redis.Core
         /// <summary>
         ///     连接到指定的Sentinel，获取 master 和 slave 信息并返回。同时，注册相应的事件用于接收 sentinel 的通知消息
         /// </summary>
-        /// <param name="num"></param>
         /// <returns></returns>
         public string Start()
         {
             var redisConnectionString = string.Empty;
             try
             {
-                SentinelConnection = ConnectionMultiplexer.Connect(SentinelConfig);
+                // redis在哨兵模式下，如果Password不为null 或 ""，会使用 AUTH 命令，但这个命令是不可用的。
+                // 所以，克隆一个配置，并将其 Password信息去除
+                ConfigurationOptions finalSentinalConfig = SentinelConfig;
+                if (!string.IsNullOrWhiteSpace(SentinelConfig.Password))
+                {
+                    var cloneConfig = SentinelConfig.Clone();
+                    cloneConfig.Password = "";
+                    finalSentinalConfig = cloneConfig;
+                }
+                SentinelConnection = ConnectionMultiplexer.Connect(finalSentinalConfig);
 
                 redisConnectionString = GetConnectionStringFromSentinel();
 

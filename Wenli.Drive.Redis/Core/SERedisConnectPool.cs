@@ -36,7 +36,6 @@ namespace Wenli.Drive.Redis.Core
 
         public SERedisConnectPool(string connectionStr, int poolSize)
         {
-
             if (_pool.Count == 0)
             {
                 lock (locker)
@@ -70,15 +69,12 @@ namespace Wenli.Drive.Redis.Core
 
         public void Dispose()
         {
-            lock (locker)
-            {
-                if (_isDisposed)
-                    return;
+            if (_isDisposed)
+                return;
 
-                foreach (var cnn in _pool)
-                    cnn.Close();
-                _pool = new List<ConnectionMultiplexer>();
-            }
+            foreach (var cnn in _pool)
+                cnn.Close();
+            _pool = new List<ConnectionMultiplexer>();
         }
 
         /// <summary>
@@ -89,7 +85,6 @@ namespace Wenli.Drive.Redis.Core
         {
             if (_isDisposed)
                 throw new Exception("这个池子已经被销毁了,请重新创建池子");
-
             var index = GetNextPos();
             var cnn = _pool[index];
             return cnn.IsConnected ? cnn : FixConnection(index);
@@ -106,26 +101,22 @@ namespace Wenli.Drive.Redis.Core
             var cnn = _pool[index];
             if (cnn.IsConnected)
                 return cnn;
-
-            lock (locker)
+            var old = cnn;
+            var config = old.Configuration;
+            try
             {
-                var old = cnn;
-                var config = old.Configuration;
-                try
-                {
-                    cnn = ConnectionMultiplexer.Connect(config);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(string.Format("重新建立连接（{0}）失败：{1}", config, ex.Message));
-                }
-                finally
-                {
-                    _pool[index] = cnn;
-                    old.Close();
-                }
-                return cnn;
+                cnn = ConnectionMultiplexer.Connect(config);
             }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("重新建立连接（{0}）失败：{1}", config, ex.Message));
+            }
+            finally
+            {
+                _pool[index] = cnn;
+                old.Close();
+            }
+            return cnn;
         }
 
         /// <summary>
