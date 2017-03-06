@@ -21,7 +21,7 @@ namespace RedisDriveTest.Fun2
 {
     public class ClusterMHelper
     {
-        static readonly string _configPath = Environment.CurrentDirectory + "\\Im.Data.Redis.Config";
+        static readonly string _configPath = Environment.CurrentDirectory + "\\Wenli.Drive.Redis.Config";
 
         static SERedisHelper _helper = new SERedisHelper();
 
