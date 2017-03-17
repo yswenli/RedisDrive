@@ -32,6 +32,16 @@ namespace RedisDriveTest
         private void MainForm_Load(object sender, EventArgs e)
         {
             Worker.Init(this);
+
+            Worker.OnTasked += Worker_OnTasked;
+        }
+
+        private void Worker_OnTasked(int obj)
+        {
+            label6.BeginInvoke(new Action(() =>
+            {
+                label6.Text = "任务共用时：" + obj + "秒";
+            }));
         }
 
         private void skinRadioButton1_CheckedChanged(object sender, EventArgs e)
@@ -51,7 +61,14 @@ namespace RedisDriveTest
 
         private void skinButton1_Click(object sender, EventArgs e)
         {
+            label6.Text = "";
             Worker.Work(this);
+        }
+
+        private void textBox2_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Worker.ClearLog();
+            textBox2.Text = "";
         }
 
         #region 菜单
@@ -127,5 +144,7 @@ namespace RedisDriveTest
                 ((TextBox)sender).SelectAll();
         }
         #endregion
+
+
     }
 }

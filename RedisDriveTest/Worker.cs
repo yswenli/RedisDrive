@@ -20,7 +20,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using System.Diagnostics;
 
 namespace RedisDriveTest
 {
@@ -35,6 +35,9 @@ namespace RedisDriveTest
         static ClusterSHelper _redisHelper1;
 
         static ClusterMHelper _redisHelper2;
+
+
+        public static event Action<int> OnTasked;
 
         /// <summary>
         /// 界面日志更新队列
@@ -212,8 +215,13 @@ namespace RedisDriveTest
 
 
         #region do
+
+        static Stopwatch watch = new Stopwatch();
+
         private static void DoWork(int operationNum, MainForm form, bool isMyDrive, string cnnStr, List<string> types)
         {
+            watch.Start();
+
             if (!isMyDrive)
             {
                 Parallel.For(0, operationNum, i =>
@@ -229,6 +237,10 @@ namespace RedisDriveTest
                     DoB(form, cnnStr, types);
                 });
             }
+
+            OnTasked?.Invoke((int)watch.Elapsed.TotalSeconds);
+            
+            watch.Reset();
         }
         private static void DoA(MainForm form, string cnnStr, List<string> types)
         {
@@ -500,34 +512,45 @@ namespace RedisDriveTest
                     {
                         form.BeginInvoke(new Action(() =>
                         {
-                            form.textBox2.Text += string.Format("{0}{1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture), Environment.NewLine);
-                            form.textBox2.Text += string.Format("{0}{1}{1}{1}", log, Environment.NewLine);
+                            form.textBox2.Text = string.Format("{0}{1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture), Environment.NewLine) + form.textBox2.Text;
+                            form.textBox2.Text = string.Format("{0}{1}{1}{1}", log, Environment.NewLine) + form.textBox2.Text;
 
                             if (form.textBox2.Text.Length > 5000)
                             {
                                 form.textBox2.Text = form.textBox2.Text.Substring(3000);
                             }
-                            form.textBox2.Focus();
-                            form.textBox2.Select(form.textBox2.Text.Length - 1, 1);
-                            form.textBox2.ScrollToCaret();
+                            //form.textBox2.Focus();
+                            //form.textBox2.Select(form.textBox2.Text.Length - 1, 1);
+                            //form.textBox2.ScrollToCaret();
                         }), null);
                     }
                     else
                     {
-                        form.textBox2.Text += string.Format("{0}{1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture), Environment.NewLine);
-                        form.textBox2.Text += string.Format("{0}{1}{1}{1}", log, Environment.NewLine);
+                        form.textBox2.Text = string.Format("{0}{1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture), Environment.NewLine)+ form.textBox2.Text;
+                        form.textBox2.Text = string.Format("{0}{1}{1}{1}", log, Environment.NewLine)+ form.textBox2.Text;
 
                         if (form.textBox2.Text.Length > 5000)
                         {
                             form.textBox2.Text = form.textBox2.Text.Substring(3000);
                         }
-                        form.textBox2.Focus();
-                        form.textBox2.Select(form.textBox2.Text.Length - 1, 1);
-                        form.textBox2.ScrollToCaret();
+                        //form.textBox2.Focus();
+                        //form.textBox2.Select(form.textBox2.Text.Length - 1, 1);
+                        //form.textBox2.ScrollToCaret();
                     }
                 }));
             });
         }
+
+        public static void ClearLog()
+        {
+            while (!_queue.IsEmpty)
+            {
+                Action a = null;
+                _queue.TryDequeue(out a);
+                a = null;
+            }            
+        }
+
         /// <summary>
         /// 打印异常信息
         /// </summary>

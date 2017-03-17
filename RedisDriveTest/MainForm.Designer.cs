@@ -69,6 +69,7 @@ namespace RedisDriveTest
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.textBox4 = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.contextMenuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -92,6 +93,7 @@ namespace RedisDriveTest
             this.textBox2.Size = new System.Drawing.Size(580, 285);
             this.textBox2.TabIndex = 999;
             this.textBox2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox2_KeyDown);
+            this.textBox2.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBox2_MouseDoubleClick);
             // 
             // contextMenuStrip1
             // 
@@ -139,6 +141,7 @@ namespace RedisDriveTest
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.skinButton1);
             this.groupBox1.Controls.Add(this.skinTextBox1);
             this.groupBox1.Controls.Add(this.textBox1);
@@ -160,7 +163,7 @@ namespace RedisDriveTest
             this.skinButton1.BackColor = System.Drawing.Color.Transparent;
             this.skinButton1.ControlState = CCWin.SkinClass.ControlState.Normal;
             this.skinButton1.DownBack = null;
-            this.skinButton1.Location = new System.Drawing.Point(304, 523);
+            this.skinButton1.Location = new System.Drawing.Point(24, 510);
             this.skinButton1.MouseBack = null;
             this.skinButton1.Name = "skinButton1";
             this.skinButton1.NormlBack = null;
@@ -372,6 +375,14 @@ namespace RedisDriveTest
             this.textBox4.Size = new System.Drawing.Size(580, 56);
             this.textBox4.TabIndex = 1001;
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(122, 531);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(0, 12);
+            this.label6.TabIndex = 19;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -417,5 +428,6 @@ namespace RedisDriveTest
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
         internal System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.Label label6;
     }
 }
