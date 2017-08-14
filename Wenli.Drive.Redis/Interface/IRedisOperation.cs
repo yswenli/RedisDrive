@@ -590,6 +590,21 @@ namespace Wenli.Drive.Redis.Interface
         /// <returns></returns>
         long QueueCount(string listId);
 
+        /// <summary>
+        /// 从出队方向入队
+        /// </summary>
+        /// <param name="listId"></param>
+        /// <param name="value"></param>
+        void REnqueue(string listId, string value);
+
+        /// <summary>
+        /// 从出队方向入队
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listId"></param>
+        /// <param name="t"></param>
+        void REnqueue<T>(string listId, T t) where T : class, new();
+
         #endregion
 
         #region SubPush

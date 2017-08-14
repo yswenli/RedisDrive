@@ -749,6 +749,21 @@
             <param name="listId"></param>
             <returns></returns>
         </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.REnqueue(System.String,System.String)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <param name="listId"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.REnqueue``1(System.String,``0)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="t"></param>
+        </member>
         <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Subscribe(System.String,System.Action{StackExchange.Redis.RedisChannel,StackExchange.Redis.RedisValue})">
             <summary>
                 订阅消息
@@ -1433,6 +1448,21 @@
             </summary>
             <param name="listId"></param>
             <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.REnqueue(System.String,System.String)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <param name="listId"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.REnqueue``1(System.String,``0)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="t"></param>
         </member>
         <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Subscribe(System.String,System.Action{StackExchange.Redis.RedisChannel,StackExchange.Redis.RedisValue})">
             <summary>

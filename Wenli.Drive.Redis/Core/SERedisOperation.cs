@@ -1550,6 +1550,38 @@ namespace Wenli.Drive.Redis.Core
             });
         }
 
+        /// <summary>
+        /// 从出队方向入队
+        /// </summary>
+        /// <param name="listId"></param>
+        /// <param name="value"></param>
+        public void REnqueue(string listId, string value)
+        {
+            DoWithRetry(() =>
+            {
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    cnn.GetDatabase().ListRightPush(listId, value);
+                }
+            });
+        }
+        /// <summary>
+        /// 从出队方向入队
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listId"></param>
+        /// <param name="t"></param>
+        public void REnqueue<T>(string listId, T t) where T : class, new()
+        {
+            DoWithRetry(() =>
+            {
+                var value = SerializeHelper.Serialize(t);
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    cnn.GetDatabase().ListRightPush(listId, value);
+                }
+            });
+        }
         #endregion
 
         #region SubPush
