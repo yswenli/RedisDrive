@@ -26,7 +26,7 @@ namespace Wenli.Drive.Redis.Core
     /// <summary>
     ///     SERedis操作类
     /// </summary>
-    public class SERedisOperation : IRedisOperation
+    public partial class SERedisOperation : IRedisOperation
     {
         /// <summary>
         ///     倒序排例

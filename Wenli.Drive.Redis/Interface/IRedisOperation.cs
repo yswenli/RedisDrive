@@ -630,5 +630,20 @@ namespace Wenli.Drive.Redis.Interface
         void Publish(string channelPrefix, string msg);
 
         #endregion
+
+        #region lock
+        /// <summary>
+        /// 分布式锁
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        bool Lock(string key, int timeout = 60 * 1000);
+        /// <summary>
+        /// 移除锁
+        /// </summary>
+        /// <param name="key"></param>
+        void UnLock(string key);
+        #endregion
     }
 }

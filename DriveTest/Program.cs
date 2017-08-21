@@ -14,6 +14,7 @@
  * 创建说明：
  *****************************************************************************************************/
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Wenli.Drive.Redis;
@@ -28,7 +29,7 @@ namespace DriveTest
 
             Console.WriteLine("Wenli.Drive.Redis test");
 
-            Console.WriteLine("输入s 测试哨兵模式，输入c测试cluster模式，M为连续，其它为单实例模式");
+            Console.WriteLine("输入s 测试哨兵模式，输入c测试cluster模式，M为连续，l为锁测试，其它为单实例模式");
 
             while (true)
             {
@@ -303,6 +304,65 @@ namespace DriveTest
 
                     Console.WriteLine("Wenli.Drive.Redis test 任务已完成！---------------------");
                     #endregion
+                }
+                else if (c.ToLower() == "l")
+                {
+                    var redisHelper = RedisHelperBuilder.Build("RedisConfig");
+
+                    Stopwatch sw = new Stopwatch();
+
+                    string key = Guid.NewGuid().ToString("N");
+
+                    redisHelper.GetRedisOperation().StringSet("calc", "0");
+
+
+                    int total = 100000;
+
+                    sw.Start();
+
+                    Parallel.For(0, 100000, i =>
+                    {
+                        total--;
+                    });
+
+                    Console.WriteLine(string.Format("total:{0} sw:{1}", total, sw.ElapsedMilliseconds));
+                    sw.Reset();
+                    Console.Read();
+                    sw.Restart();
+
+                    total = 100000;
+
+                    int t = 0;
+
+                    int f = 0;
+
+                    Parallel.For(0, 1000000, i =>
+                    {
+                        Stopwatch sw1 = new Stopwatch();
+                        sw1.Start();
+
+                        if (redisHelper.GetRedisOperation().Lock(key))
+                        {
+                            var tt = int.Parse(redisHelper.GetRedisOperation().StringGet("calc"));
+
+                            tt++;
+
+                            redisHelper.GetRedisOperation().StringSet("calc", tt.ToString());
+
+                            redisHelper.GetRedisOperation().UnLock(key);
+                        }
+                        var v = sw1.ElapsedMilliseconds;
+                        if (v >= 10 * 1000)
+                        {
+                            Console.Write("f");
+                        }
+                        sw1.Stop();
+                    });
+
+
+                    Console.WriteLine(string.Format("total:{0} sw:{1} t:{2} f{3} tt{4}", total, sw.ElapsedMilliseconds, t, f, redisHelper.GetRedisOperation().StringGet("calc")));
+                    sw.Reset();
+                    Console.ReadLine();
                 }
                 else
                 {

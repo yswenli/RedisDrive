@@ -88,6 +88,7 @@
     <Compile Include="Core\SERedisConnectionPoolManager.cs" />
     <Compile Include="Core\SERedisConnectPool.cs" />
     <Compile Include="Core\SERedisHelper.cs" />
+    <Compile Include="Core\SERedisLock.cs" />
     <Compile Include="Core\SERedisOperation.cs" />
     <Compile Include="Core\SESentinelClient.cs" />
     <Compile Include="Data\PagedList.cs" />

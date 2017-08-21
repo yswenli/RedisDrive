@@ -185,6 +185,32 @@
                 SERedis操作类
             </summary>
         </member>
+        <member name="F:Wenli.Drive.Redis.Core.SERedisOperation._expireMsecs">
+            <summary>
+            锁超时时间，防止线程在入锁以后，无限的执行等待
+            </summary>
+        </member>
+        <member name="F:Wenli.Drive.Redis.Core.SERedisOperation.DEFAULT_ACQUIRY_RESOLUTION_MILLIS">
+            <summary>
+            检查间隔
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Lock(System.String,System.Int32)">
+             获得 lock.
+             实现思路: 主要是使用了redis 的setnx命令,缓存了锁.
+             reids缓存的key是锁的key,所有的共享, value是锁的到期时间(注意:这里把过期时间放在value了,没有时间上设置其超时时间)
+             执行过程:
+             1.通过setnx尝试设置某个key的值,成功(当前没有这个锁)则返回,成功获得锁
+             2.锁已经存在则获取锁的到期时间,和当前时间比较,超时的话,则设置新的值
+            
+             @return true if lock is acquired, false acquire timeouted
+             @throws InterruptedException in case of thread interruption
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.UnLock(System.String)">
+            <summary>
+            移除lock
+            </summary>
+        </member>
         <member name="F:Wenli.Drive.Redis.Core.SERedisOperation.DefaultOrder">
             <summary>
                 倒序排例
@@ -1483,6 +1509,20 @@
             </summary>
             <param name="channelPrefix"></param>
             <param name="msg"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Lock(System.String,System.Int32)">
+            <summary>
+            分布式锁
+            </summary>
+            <param name="key"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.UnLock(System.String)">
+            <summary>
+            移除锁
+            </summary>
+            <param name="key"></param>
         </member>
         <member name="T:Wenli.Drive.Redis.RedisConfig">
             <summary>
