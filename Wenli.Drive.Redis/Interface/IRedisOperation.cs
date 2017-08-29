@@ -614,7 +614,7 @@ namespace Wenli.Drive.Redis.Interface
         /// </summary>
         /// <param name="channelPrefix"></param>
         /// <param name="action"></param>
-        void Subscribe(string channelPrefix, Action<RedisChannel, RedisValue> action);
+        void Subscribe(string channelPrefix, Action<string, string> action);
 
         /// <summary>
         ///     取消订阅

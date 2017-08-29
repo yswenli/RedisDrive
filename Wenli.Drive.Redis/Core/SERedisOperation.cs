@@ -1593,14 +1593,17 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         /// <param name="channelPrefix"></param>
         /// <param name="action"></param>
-        public void Subscribe(string channelPrefix, Action<RedisChannel, RedisValue> action)
+        public void Subscribe(string channelPrefix, Action<string, string> action)
         {
             DoWithRetry(() =>
             {
                 if (subcnn == null)
                     subcnn = new SERedisConnection(_sectionName, _dbIndex);
                 var pub = subcnn.GetSubscriber();
-                pub.Subscribe(new RedisChannel(channelPrefix, RedisChannel.PatternMode.Auto), action);
+                pub.Subscribe(new RedisChannel(channelPrefix, RedisChannel.PatternMode.Auto), (x, y) =>
+                {
+                    action(x.ToString(), y.ToString());
+                });
             });
         }
 
