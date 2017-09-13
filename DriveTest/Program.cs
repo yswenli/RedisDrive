@@ -325,7 +325,7 @@ namespace DriveTest
                         total--;
                     });
 
-                    Console.WriteLine(string.Format("total:{0} sw:{1}", total, sw.ElapsedMilliseconds));
+                    Console.WriteLine(string.Format("total:{0} time:{1}", total, sw.ElapsedMilliseconds));
                     sw.Reset();
                     Console.Read();
                     sw.Restart();
@@ -336,31 +336,34 @@ namespace DriveTest
 
                     int f = 0;
 
-                    Parallel.For(0, 1000000, i =>
+                    Parallel.For(0, total, i =>
                     {
                         Stopwatch sw1 = new Stopwatch();
+
                         sw1.Start();
 
                         if (redisHelper.GetRedisOperation().Lock(key))
                         {
-                            var tt = int.Parse(redisHelper.GetRedisOperation().StringGet("calc"));
+                            //Interlocked.Add(ref t, 1);
 
-                            tt++;
+                            t++;
 
-                            redisHelper.GetRedisOperation().StringSet("calc", tt.ToString());
+                            redisHelper.GetRedisOperation().StringSet(key, t.ToString());
 
                             redisHelper.GetRedisOperation().UnLock(key);
                         }
-                        var v = sw1.ElapsedMilliseconds;
-                        if (v >= 10 * 1000)
+                        else
                         {
+                            Interlocked.Add(ref f, 1);
                             Console.Write("f");
                         }
+
                         sw1.Stop();
                     });
 
 
-                    Console.WriteLine(string.Format("total:{0} sw:{1} t:{2} f{3} tt{4}", total, sw.ElapsedMilliseconds, t, f, redisHelper.GetRedisOperation().StringGet("calc")));
+                    Console.WriteLine(string.Format("total:{0} time:{1} t:{2} expired:{3} StringGet:{4}", total, sw.ElapsedMilliseconds, t, f, redisHelper.GetRedisOperation().StringGet(key)));
+                    redisHelper.GetRedisOperation().KeyDelete(key);
                     sw.Reset();
                     Console.ReadLine();
                 }

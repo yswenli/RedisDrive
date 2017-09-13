@@ -637,8 +637,9 @@ namespace Wenli.Drive.Redis.Interface
         /// </summary>
         /// <param name="key"></param>
         /// <param name="timeout"></param>
+        /// <param name="rolling"></param>
         /// <returns></returns>
-        bool Lock(string key, int timeout = 60 * 1000);
+        bool Lock(string key, int timeout = 30 * 1000, int rolling = 500);
         /// <summary>
         /// 移除锁
         /// </summary>
