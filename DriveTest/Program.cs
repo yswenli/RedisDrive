@@ -311,10 +311,7 @@ namespace DriveTest
 
                     Stopwatch sw = new Stopwatch();
 
-                    string key = Guid.NewGuid().ToString("N");
-
-                    redisHelper.GetRedisOperation().StringSet("calc", "0");
-
+                    string key = "lock_test";
 
                     int total = 100000;
 
@@ -325,16 +322,17 @@ namespace DriveTest
                         total--;
                     });
 
-                    Console.WriteLine(string.Format("total:{0} time:{1}", total, sw.ElapsedMilliseconds));
+                    Console.WriteLine(string.Format("未加锁 total:{0} time:{1}", total, sw.ElapsedMilliseconds));
                     sw.Reset();
-                    Console.Read();
+                    Console.WriteLine("回车锁测试");
+                    Console.ReadLine();
                     sw.Restart();
 
                     total = 100000;
 
-                    int t = 0;
-
                     int f = 0;
+
+                    int val = 1;
 
                     Parallel.For(0, total, i =>
                     {
@@ -342,30 +340,38 @@ namespace DriveTest
 
                         sw1.Start();
 
-                        if (redisHelper.GetRedisOperation().Lock(key))
+                        if (redisHelper.GetRedisOperation().Lock(key, 30000, 10))
                         {
-                            //Interlocked.Add(ref t, 1);
 
-                            t++;
+                            if (!int.TryParse(redisHelper.GetRedisOperation().StringGet(key), out val))
+                            {
+                                val = 1;
+                            }
+                            else
+                            {
+                                val++;
+                            }
 
-                            redisHelper.GetRedisOperation().StringSet(key, t.ToString());
+                            redisHelper.GetRedisOperation().StringSet(key, val.ToString());
 
                             redisHelper.GetRedisOperation().UnLock(key);
                         }
                         else
                         {
                             Interlocked.Add(ref f, 1);
-                            Console.Write("f");
+                            Console.Write("f:{0}", f);
                         }
 
                         sw1.Stop();
                     });
 
-
-                    Console.WriteLine(string.Format("total:{0} time:{1} t:{2} expired:{3} StringGet:{4}", total, sw.ElapsedMilliseconds, t, f, redisHelper.GetRedisOperation().StringGet(key)));
-                    redisHelper.GetRedisOperation().KeyDelete(key);
+                    Console.WriteLine(string.Format("已加锁 total:{0} time:{1} f:{2} StringGet:{3}", total, sw.ElapsedMilliseconds, f, redisHelper.GetRedisOperation().StringGet(key)));
                     sw.Reset();
                     Console.ReadLine();
+                    redisHelper.GetRedisOperation().KeyDelete(key);
+
+
+
                 }
                 else
                 {

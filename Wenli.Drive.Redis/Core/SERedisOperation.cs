@@ -78,26 +78,30 @@ namespace Wenli.Drive.Redis.Core
 
                     if (ex is TimeoutException)
                     {
-                        retryCountMsg = string.Format("TimeoutException Redis<T>操作超时，等待随后重试。当前已经重试：{0};ex:{1}", counter, ex.Message);
+                        retryCountMsg = string.Format("TimeoutException Redis<T> {0}操作超时，等待随后重试。当前已经重试：{1};ex:{2}", func.Method.Name, counter, ex.Message);
                     }
                     else if (ex is RedisConnectionException)
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T>连接异常，等待随后重试。当前已重试：{0};ex:{1}", counter, ex.Message);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException.Message);
                     }
                     else if (ex is RedisServerException && ex.Message.Contains("MOVED"))
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T> MOVED 异常，等待随后重试。当前已重试：{0};ex:{1}", counter, ex.Message);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.Message);
                     }
                     else
                     {
+                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, ex);
                         throw ex;
                     }
 
-                    // 将重试写成错误，引起重视
                     Log4NetHelper.WriteLog(retryCountMsg);
 
                     if (counter > _busyRetry)
+                    {
+                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, new Exception("已超出配置的连接次数!"));
                         throw ex;  // 大于重试次数，将直接抛出去
+                    }
+
                     Thread.Sleep(counter * _busyRetryWaitMS);
 
                 }
@@ -123,22 +127,30 @@ namespace Wenli.Drive.Redis.Core
 
                     if (ex is TimeoutException)
                     {
-                        retryCountMsg = string.Format("TimeoutException Redis<T>操作超时，等待随后重试。当前已经重试：{0};ex:{1}", counter, ex.Message);
+                        retryCountMsg = string.Format("TimeoutException Redis<T> {0}操作超时，等待随后重试。当前已经重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
                     }
                     else if (ex is RedisConnectionException)
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T>连接异常，等待随后重试。当前已重试：{0};ex:{1}", counter, ex.Message);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                    }
+                    else if (ex is RedisServerException && ex.Message.Contains("MOVED"))
+                    {
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
                     }
                     else
                     {
+                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, ex);
                         throw ex;
                     }
 
-                    // 将重试写成info，引起重视
                     Log4NetHelper.WriteLog(retryCountMsg);
 
                     if (counter > _busyRetry)
+                    {
+                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, new Exception("已超出配置的连接次数!"));
                         throw ex;  // 大于重试次数，将直接抛出去
+                    }
+
                     Thread.Sleep(counter * _busyRetryWaitMS);
                 }
             }

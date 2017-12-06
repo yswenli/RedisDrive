@@ -7,8 +7,6 @@ namespace Wenli.Drive.Redis.Core
     public partial class SERedisOperation : IRedisOperation
     {
 
-
-
         private static readonly string _prex = "lock_";
 
         /// <summary>
@@ -26,7 +24,7 @@ namespace Wenli.Drive.Redis.Core
             String expiresStr = expires.ToString();
 
             while (timeout > rolling)
-            {               
+            {
                 if (this.StringSetIfNotExists(lockKey, expiresStr))
                 {
                     this.KeyExpire(lockKey, expireDateTime);
