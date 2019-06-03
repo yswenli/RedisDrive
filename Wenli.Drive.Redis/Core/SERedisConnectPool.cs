@@ -34,8 +34,13 @@ namespace Wenli.Drive.Redis.Core
 
         private static object locker = new object();
 
+        string _connectionStr = string.Empty;
+
         public SERedisConnectPool(string connectionStr, int poolSize)
         {
+            if (!string.IsNullOrEmpty(connectionStr))
+                _connectionStr = connectionStr;
+
             if (_pool.Count == 0)
             {
                 lock (locker)
@@ -47,6 +52,7 @@ namespace Wenli.Drive.Redis.Core
                             try
                             {
                                 var cnn = ConnectionMultiplexer.Connect(connectionStr);
+                                cnn.ConnectionFailed += Cnn_ConnectionFailed;
                                 _pool.Add(cnn);
                             }
                             catch (Exception ex)
@@ -55,6 +61,29 @@ namespace Wenli.Drive.Redis.Core
                             }
                         }
                     }
+                }
+            }
+        }
+
+        private void Cnn_ConnectionFailed(object sender, ConnectionFailedEventArgs e)
+        {
+            var cnn = sender as ConnectionMultiplexer;
+
+            if (cnn != null)
+            {
+                try
+                {
+                    _pool.Remove(cnn);
+
+                    cnn = ConnectionMultiplexer.Connect(_connectionStr);
+
+                    cnn.ConnectionFailed += Cnn_ConnectionFailed;
+
+                    _pool.Add(cnn);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("初始化连接池建立连接（{0}）失败：{1}", _connectionStr, ex.Message));
                 }
             }
         }
