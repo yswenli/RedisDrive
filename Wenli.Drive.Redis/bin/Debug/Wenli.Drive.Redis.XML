@@ -1,0 +1,1876 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Wenli.Drive.Redis</name>
+    </assembly>
+    <members>
+        <member name="T:Wenli.Drive.Redis.Core.SERedisConnection">
+            <summary>
+                redis 连接
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.#ctor(System.String,System.Int32)">
+            <summary>
+                redis 连接
+            </summary>
+            <param name="sectionName"></param>
+            <param name="dbIndex"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.Dispose">
+            <summary>
+                释放连接
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.GetDatabase">
+            <summary>
+                获取db
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.GetDatabaseFromNextConnection">
+            <summary>
+               从连接池中取出下一个连接并获得他的database 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.GetSubscriber">
+            <summary>
+                获取订阅
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Wenli.Drive.Redis.Core.SERedisConnection.Pool">
+            <summary>
+               获取当前section的poolSize
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.Keys(System.String)">
+            <summary>
+            获取某服务器上全部keys
+            </summary>
+            <param name="patten"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnection.GetServerInfo">
+            <summary>
+            获取服务器信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Core.SERedisConnectionPoolManager">
+            <summary>
+                对connectionpool的管理
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnectionPoolManager.Create(System.String,System.String,System.Int32)">
+            <summary>
+                初始化池
+            </summary>
+            <param name="sectionName"></param>
+            <param name="connectionStr"></param>
+            <param name="poolSize"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnectionPoolManager.Exists(System.String)">
+            <summary>
+                连接池是否存在
+            </summary>
+            <param name="sectionName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnectionPoolManager.GetConnectionMultiplexer(System.String)">
+            <summary>
+                从池中取出一个连接
+                检查连接是否断开
+            </summary>
+            <param name="sectionName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnectionPoolManager.GetPool(System.String)">
+            <summary>
+            获取特定section的connectionPool
+            </summary>
+            <param name="sectionName"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Core.SERedisConnectPool">
+            <summary>
+                redis连接池
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnectPool.GetConnection">
+            <summary>
+                从连接池中取出一个连接
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnectPool.FixConnection(System.Int32)">
+            <summary>
+                修复pool中特定位置的连接
+            </summary>
+            <param name="index">有问题的connection位置</param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisConnectPool.GetNextPos">
+            <summary>
+                获得下一个连接的位置
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Core.SERedisHelper">
+            <summary>
+                SERedis操作处理类
+            </summary>
+        </member>
+        <member name="F:Wenli.Drive.Redis.Core.SERedisHelper._SentinelPool">
+            <summary>
+                哨兵监听集合
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.Dispose">
+            <summary>
+                释放
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.Init(System.String)">
+            <summary>
+                初始化池，类似于构造方法
+                不要重复调用
+            </summary>
+            <param name="section"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.Init(System.String,System.Int32,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            初始化
+            </summary>
+            <param name="sectionName"></param>
+            <param name="type"></param>
+            <param name="master"></param>
+            <param name="password"></param>
+            <param name="serviceName"></param>
+            <param name="poolSize"></param>
+            <param name="busyRetry"></param>
+            <param name="busyRetryWaitMS"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.GetRedisOperation(System.Int32)">
+            <summary>
+                redis操作
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.Init(Wenli.Drive.Redis.RedisConfig)">
+            <summary>
+                初始化池，类似于构造方法
+                不要重复调用
+            </summary>
+            <param name="redisConfig"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.GenerateConnectionString(Wenli.Drive.Redis.RedisConfig)">
+            <summary>
+                根据redis使用类型来生成相应的连接字符串
+            </summary>
+            <param name="redisConfig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisHelper.sentinel_OnRedisServerChanged(System.String,System.String,System.Int32)">
+            <summary>
+            哨兵监测事件
+            </summary>
+            <param name="section"></param>
+            <param name="newConnectionString"></param>
+            <param name="poolSize"></param>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Core.SERedisOperation">
+            <summary>
+                SERedis操作类
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Lock(System.String,System.Int32,System.Int32)">
+            <summary>
+            利用StringSetIfNotExists实现锁
+            </summary>
+            <param name="key"></param>
+            <param name="timeout"></param>
+            <param name="rolling"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.UnLock(System.String)">
+            <summary>
+            移除lock
+            </summary>
+        </member>
+        <member name="F:Wenli.Drive.Redis.Core.SERedisOperation.DefaultOrder">
+            <summary>
+                倒序排例
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.#ctor(System.String,System.Int32,System.Int32,System.Int32)">
+            <summary>
+                SERedis操作类
+            </summary>
+            <param name="sectionName"></param>
+            <param name="dbIndex"></param>
+            <param name="busyRetry"></param>
+            <param name="busyRetryWaitMS"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetServerInfo">
+            <summary>
+            获取服务器信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeyExists(System.String)">
+            <summary>
+                是否存在key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeyExpire(System.String,System.DateTime)">
+            <summary>
+                设置key过期时间
+            </summary>
+            <param name="key"></param>
+            <param name="datetime"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeyExpire(System.String,System.Int32)">
+            <summary>
+                设置key过期时间
+            </summary>
+            <param name="key"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringSet(System.String,System.String,System.Int32)">
+            <summary>
+                设置key
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringSet(System.String,System.String,System.TimeSpan)">
+            <summary>
+                设置key
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="expire">key的超时时常</param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringSetIfNotExists(System.String,System.String)">
+            <summary>
+             设置一个值，仅在不存在的时候设置
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringSetIfNotExists(System.String,System.String,System.TimeSpan)">
+            <summary>
+             设置一个值，仅在不存在的时候设置
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="ts">超时时间</param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringGetSet(System.String,System.String)">
+            <summary>
+                获取key的同时set该Key
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringGet(System.String)">
+            <summary>
+                获取key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringSet``1(System.String,``0,System.Int32)">
+            <summary>
+                设置key
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <param name="t"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringGet``1(System.String)">
+            <summary>
+                获取key
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.BatchStringGet``1(System.Collections.Generic.List{System.String})">
+            <summary>
+            批量获取
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetValues``1(System.Collections.Generic.List{System.String})">
+            <summary>
+                获取kv列表集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetValues``1(System.String[])">
+            <summary>
+                获取kv列表集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetValues(System.String[])">
+            <summary>
+                获取kv列表集合
+            </summary>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeyDelete(System.String)">
+            <summary>
+                移除key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeysDelete(System.String[])">
+            <summary>
+                批量删除
+            </summary>
+            <param name="keys"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeysDelete(System.Collections.Generic.List{System.String})">
+            <summary>
+                批量删除
+            </summary>
+            <param name="keys"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.KeyRename(System.String,System.String)">
+            <summary>
+                重命名key
+            </summary>
+            <param name="oldKey"></param>
+            <param name="newKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringIncrement(System.String,System.Double)">
+            <summary>
+                key计数器
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringDecrement(System.String,System.Double)">
+            <summary>
+                key计数器(减去相应的value)
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.StringAppend(System.String,System.String)">
+            <summary>
+                追加value
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashExists(System.String,System.String)">
+            <summary>
+                检查hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashSet``1(System.String,System.String,``0)">
+            <summary>
+                设置hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="t"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashSet(System.String,System.String,System.String)">
+            <summary>
+                设置hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="t"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashSetIfNotExists(System.String,System.String,System.String)">
+            <summary>
+                在一个hash中设置一个key - value，仅仅当不存在的时候才设置
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="t"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashDelete(System.String,System.String)">
+            <summary>
+                移除hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashDelete(System.String,System.String[])">
+            <summary>
+            批量移除hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashIncrement(System.String,System.String,System.Int64)">
+            <summary>
+                hash计数器
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGet``1(System.String,System.String)">
+            <summary>
+                获取hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGet(System.String,System.String)">
+            <summary>
+                获取hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetHashCount(System.String)">
+            <summary>
+                获取hash数量
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGetAll(System.String)">
+            <summary>
+                获取某个hashid下面全部hash
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGetAll``1(System.String)">
+            <summary>
+                获取某个hashid下面全部hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGetAllDic``1(System.String)">
+            <summary>
+                获取全部的hashkey,hashvalue字典
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGetAllDic(System.String)">
+            <summary>
+                获取全部的hashkey,hashvalue字典
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGetAll``1(System.String,System.Int32,System.Int32)">
+            <summary>
+                分页某个hashid下面hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashID"></param>
+            <param name="pageIndex"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.HashGetAll``1(System.Collections.Generic.List{System.String})">
+            <summary>
+                获取指定的全部hashlist
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashIds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetHashKeys(System.String)">
+            <summary>
+                获取某个hashid下面全部keys
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetValuesFromHash``1(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+                从指定hashid,keys中获取指定hash集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetValuesDicFromHash``1(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            从指定hashid,keys中获取指定hash集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetValuesFromHash(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+                从指定hashid,keys中获取指定hash集合
+            </summary>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SetAdd(System.String,System.String)">
+            <summary>
+                添加一个set
+            </summary>
+            <param name="setId"></param>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SetContains(System.String,System.String)">
+            <summary>
+                是否存在于set中
+            </summary>
+            <param name="setId"></param>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SetMembers(System.String)">
+            <summary>
+                获取某个key下面全部的value
+            </summary>
+            <param name="setId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SetRemove(System.String,System.String)">
+            <summary>
+                移除set
+            </summary>
+            <param name="setId"></param>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SetsRemove(System.String,System.String[])">
+            <summary>
+                批量删除set
+            </summary>
+            <param name="setId"></param>
+            <param name="vals"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SetLength(System.String)">
+            <summary>
+                返回指定set长度
+            </summary>
+            <param name="setId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SortedSetItemIsExist(System.String,System.String)">
+            <summary>
+                检查SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SortedSetAdd(System.String,System.String,System.Double)">
+            <summary>
+                添加SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="score"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetSortedSetRangeByRank(System.String,System.Int64,System.Int64,System.String)">
+            <summary>
+                查询SortedSet集合
+            </summary>
+            <param name="setId"></param>
+            <param name="fromRank"></param>
+            <param name="toRank"></param>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetSortedSetRangeByRankWithScores(System.String,System.Int64,System.Int64,System.String)">
+            <summary>
+                根据score查询SortedSet集合
+            </summary>
+            <param name="setId"></param>
+            <param name="fromRank"></param>
+            <param name="toRank"></param>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetSortedSetRangeByRankWithSocres(System.String,System.Int64,System.Int64,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+                获取SortedSet集合区间
+            </summary>
+            <param name="setid"></param>
+            <param name="min">最小score</param>
+            <param name="max">最大score</param>
+            <param name="pageIndex"></param>
+            <param name="pageSize"></param>
+            <param name="orderBy"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetSortedSetRangeByRankBySocre(System.String,System.Double,System.Double,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            获取SortedSet集合区间
+            </summary>
+            <param name="setid"></param>
+            <param name="minScore"></param>
+            <param name="maxScore"></param>
+            <param name="pageIndex"></param>
+            <param name="pageSize"></param>
+            <param name="orderBy"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetSortedSetRangeByValue(System.String,System.Int64,System.Int64)">
+            <summary>
+                根据值范围获取SortedSet集合
+            </summary>
+            <param name="setId"></param>
+            <param name="minValue"></param>
+            <param name="maxValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetSortedSetLength(System.String)">
+            <summary>
+                获取SortedSet长度
+            </summary>
+            <param name="setId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetSortedSetLength(System.String,System.Double,System.Double)">
+            <summary>
+                根据值范围儿取SortedSet长度
+            </summary>
+            <param name="setId"></param>
+            <param name="minValue"></param>
+            <param name="maxValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetItemRankFromSortedSet(System.String,System.String,System.String)">
+            <summary>
+                获取某个SortedSet所在的序号
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetItemScoreFromSortedSet(System.String,System.String)">
+            <summary>
+                获取某个SortedSet的score值
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SetSortedSetItemIncrement(System.String,System.String,System.Double)">
+            <summary>
+                SortedSet计数器+
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="score"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.SortedSetItemDecrement(System.String,System.String,System.Double)">
+            <summary>
+                SortedSet计数器-
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="score"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.RemoveItemFromSortedSet(System.String,System.String)">
+            <summary>
+                称除SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.RemoveByRankFromSortedSet(System.String,System.Int64,System.Int64)">
+            <summary>
+                移除某个序号范围的SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="fromRank"></param>
+            <param name="toRank"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.RemoveByScoreFromSortedSet(System.String,System.Double,System.Double)">
+            <summary>
+                移除某个score范围的SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="minValue"></param>
+            <param name="maxValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Enqueue(System.String,System.String)">
+            <summary>
+                进队
+            </summary>
+            <param name="listId"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Dnqueue(System.String)">
+            <summary>
+                出队
+            </summary>
+            <param name="listId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Enqueue``1(System.String,``0)">
+            <summary>
+                进队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="t"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Dnqueue``1(System.String)">
+            <summary>
+                出队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.GetList``1(System.String,System.Int64,System.Int64)">
+            <summary>
+                获取队列元素
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="start"></param>
+            <param name="stop"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.QueueCount(System.String)">
+            <summary>
+                获取队列长度
+            </summary>
+            <param name="listId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.REnqueue(System.String,System.String)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <param name="listId"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.REnqueue``1(System.String,``0)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="t"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Subscribe(System.String,System.Action{System.String,System.String})">
+            <summary>
+                订阅消息
+            </summary>
+            <param name="channelPrefix"></param>
+            <param name="action"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Unsubscribe(System.String)">
+            <summary>
+                取消订阅
+            </summary>
+            <param name="channelPrefix"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SERedisOperation.Publish(System.String,System.String)">
+            <summary>
+                发布消息
+            </summary>
+            <param name="channelPrefix"></param>
+            <param name="msg"></param>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Core.SESentinelClient">
+            <summary>
+                SE哨兵操作类
+            </summary>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Core.SESentinelClient.OnRedisServerChangedHander">
+            <summary>
+            主从切换通知事件委托
+            </summary>
+            <param name="section"></param>
+            <param name="newconnectionString"></param>
+            <param name="poolSize"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.#ctor(System.String,System.String,System.Int32,System.String)">
+            <summary>
+            初始化哨兵类
+            </summary>
+            <param name="section"></param>
+            <param name="connectionStr"></param>
+            <param name="poolSize"></param>
+            <param name="password"></param>
+        </member>
+        <member name="P:Wenli.Drive.Redis.Core.SESentinelClient.SentinelConfig">
+            <summary>
+                哨兵配置
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.Core.SESentinelClient.SentinelConnection">
+            <summary>
+                sentinel连接器
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.Core.SESentinelClient.PoolSize">
+            <summary>
+            哨兵对应的节点的池大小
+            </summary>
+        </member>
+        <member name="E:Wenli.Drive.Redis.Core.SESentinelClient.OnRedisServerChanged">
+            <summary>
+                主从切换通知事件
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.RaiseOnRedisServerChanged(System.String,System.String,System.Int32)">
+            <summary>
+            触发主从切换通知事件
+            </summary>
+            <param name="section"></param>
+            <param name="newconnectionString"></param>
+            <param name="poolsize"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.GetActiveServer(StackExchange.Redis.ConnectionMultiplexer,System.Net.EndPoint[])">
+            <summary>
+                获取活动的哨兵服务器
+            </summary>
+            <param name="conn"></param>
+            <param name="endpoints"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.SanitizeHostsConfig(System.Collections.Generic.KeyValuePair{System.String,System.String}[][])">
+            <summary>
+                中间处理slave endpoint列表
+            </summary>
+            <param name="slaves"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.GetConnectionStringFromSentinel">
+            <summary>
+                根据当前哨兵获取对应redis实例的连接字符串
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Core.SESentinelClient.Start">
+            <summary>
+                连接到指定的Sentinel，获取 master 和 slave 信息并返回。同时，注册相应的事件用于接收 sentinel 的通知消息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Data.PagedList`1">
+            <summary>
+            分页信息类
+            </summary>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Interface.IRedisHelper">
+            <summary>
+                redis操作类实现接口
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisHelper.Init(System.String)">
+            <summary>
+                初始化池
+            </summary>
+            <param name="section"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisHelper.Init(Wenli.Drive.Redis.RedisConfig)">
+            <summary>
+                初始化池
+            </summary>
+            <param name="config"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisHelper.Init(System.String,System.Int32,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            初始化池
+            </summary>
+            <param name="sectionName"></param>
+            <param name="type"></param>
+            <param name="master"></param>
+            <param name="password"></param>
+            <param name="serviceName"></param>
+            <param name="poolSize"></param>
+            <param name="busyRetry"></param>
+            <param name="busyRetryWaitMS"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisHelper.GetRedisOperation(System.Int32)">
+            <summary>
+                redis操作
+            </summary>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Interface.IRedisOperation">
+            <summary>
+                redis操作接口
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.KeyExists(System.String)">
+            <summary>
+                是否存在key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.KeyExpire(System.String,System.DateTime)">
+            <summary>
+                设置key过期时间
+            </summary>
+            <param name="key"></param>
+            <param name="datetime"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.KeyExpire(System.String,System.Int32)">
+            <summary>
+                设置key过期时间
+            </summary>
+            <param name="key"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringSet(System.String,System.String,System.Int32)">
+            <summary>
+                设置key
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringSet(System.String,System.String,System.TimeSpan)">
+            <summary>
+                设置key，同时设置该key的超时值
+            </summary>
+            <param name="key">设置的Key</param>
+            <param name="value">设置的Value</param>
+            <param name="expire">key的超时时常</param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringSetIfNotExists(System.String,System.String)">
+            <summary>
+            设置一个值，仅在不存在的时候设置
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringSetIfNotExists(System.String,System.String,System.TimeSpan)">
+            <summary>
+             设置一个值，仅在不存在的时候设置
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="ts">超时时间</param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringGetSet(System.String,System.String)">
+            <summary>
+                获取key的同时set该Key
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringGet(System.String)">
+            <summary>
+                获取key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringSet``1(System.String,``0,System.Int32)">
+            <summary>
+                设置key
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <param name="t"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringGet``1(System.String)">
+            <summary>
+                获取key
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.BatchStringGet``1(System.Collections.Generic.List{System.String})">
+            <summary>
+            批量获取
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetValues``1(System.String[])">
+            <summary>
+                获取kv列表集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetValues(System.String[])">
+            <summary>
+                获取kv列表集合
+            </summary>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetValues``1(System.Collections.Generic.List{System.String})">
+            <summary>
+                获取kv列表集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.KeyDelete(System.String)">
+            <summary>
+                移除key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.KeysDelete(System.String[])">
+            <summary>
+                批量删除
+            </summary>
+            <param name="keys"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.KeysDelete(System.Collections.Generic.List{System.String})">
+            <summary>
+                批量删除
+            </summary>
+            <param name="keys"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.KeyRename(System.String,System.String)">
+            <summary>
+                重命名key
+            </summary>
+            <param name="oldKey"></param>
+            <param name="newKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringIncrement(System.String,System.Double)">
+            <summary>
+                key计数器(加上相应的value)
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringDecrement(System.String,System.Double)">
+            <summary>
+                key计数器(减去相应的value)
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.StringAppend(System.String,System.String)">
+            <summary>
+                追加value
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashExists(System.String,System.String)">
+            <summary>
+                检查hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashSet``1(System.String,System.String,``0)">
+            <summary>
+                设置hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="t"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashSet(System.String,System.String,System.String)">
+            <summary>
+                设置hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="t"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashSetIfNotExists(System.String,System.String,System.String)">
+            <summary>
+                在一个hash中设置一个key - value，仅仅当不存在的时候才设置
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="t"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashDelete(System.String,System.String)">
+            <summary>
+                移除hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashDelete(System.String,System.String[])">
+            <summary>
+            批量移除hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashIncrement(System.String,System.String,System.Int64)">
+            <summary>
+                hash计数器
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGet``1(System.String,System.String)">
+            <summary>
+                获取hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetHashCount(System.String)">
+            <summary>
+                获取hash数量
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGet(System.String,System.String)">
+            <summary>
+                获取hash
+            </summary>
+            <param name="hashId"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGetAll``1(System.String)">
+            <summary>
+                获取某个hashid下面全部hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGetAllDic``1(System.String)">
+            <summary>
+                获取全部的hashkey,hashvalue字典
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGetAllDic(System.String)">
+            <summary>
+                获取全部的hashkey,hashvalue字典
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGetAll``1(System.String,System.Int32,System.Int32)">
+            <summary>
+                分页获取某个hashid下面hash
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashID"></param>
+            <param name="pageIndex"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGetAll(System.String)">
+            <summary>
+                获取某个hashid下面全部hash
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.HashGetAll``1(System.Collections.Generic.List{System.String})">
+            <summary>
+                获取指定的全部hashlist
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashIds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetHashKeys(System.String)">
+            <summary>
+                获取某个hashid下面全部keys
+            </summary>
+            <param name="hashId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetValuesFromHash``1(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+                从指定hashid,keys中获取指定hash集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetValuesFromHash(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+                从指定hashid,keys中获取指定hash集合
+            </summary>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetValuesDicFromHash``1(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            从指定hashid,keys中获取指定hash集合
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashId"></param>
+            <param name="keys"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SetAdd(System.String,System.String)">
+            <summary>
+                添加set值
+            </summary>
+            <param name="setId"></param>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SetContains(System.String,System.String)">
+            <summary>
+                是否存在于set中
+            </summary>
+            <param name="setId"></param>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SetMembers(System.String)">
+            <summary>
+                获取某个key下面全部的value
+            </summary>
+            <param name="setId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SetRemove(System.String,System.String)">
+            <summary>
+                移除set
+            </summary>
+            <param name="setId"></param>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SetsRemove(System.String,System.String[])">
+            <summary>
+                批量删除set
+            </summary>
+            <param name="setId"></param>
+            <param name="vals"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SetLength(System.String)">
+            <summary>
+                返回指定set长度
+            </summary>
+            <param name="setId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SortedSetItemIsExist(System.String,System.String)">
+            <summary>
+                检查SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SortedSetAdd(System.String,System.String,System.Double)">
+            <summary>
+                添加SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="score"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetSortedSetRangeByRank(System.String,System.Int64,System.Int64,System.String)">
+            <summary>
+                查询SortedSet集合
+            </summary>
+            <param name="setId"></param>
+            <param name="fromRank"></param>
+            <param name="toRank"></param>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetSortedSetRangeByRankWithScores(System.String,System.Int64,System.Int64,System.String)">
+            <summary>
+                查询SortedSet集合
+            </summary>
+            <param name="setId"></param>
+            <param name="fromRank"></param>
+            <param name="toRank"></param>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetSortedSetRangeByRankWithSocres(System.String,System.Int64,System.Int64,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+                根据score分页查询SortedSet集合
+            </summary>
+            <param name="setid"></param>
+            <param name="min"></param>
+            <param name="max"></param>
+            <param name="pageIndex"></param>
+            <param name="pageSize"></param>
+            <param name="orderBy"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetSortedSetRangeByRankBySocre(System.String,System.Double,System.Double,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            根据score分页查询SortedSet集合
+            </summary>
+            <param name="setid"></param>
+            <param name="minScore"></param>
+            <param name="maxScore"></param>
+            <param name="pageIndex"></param>
+            <param name="pageSize"></param>
+            <param name="orderBy"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetSortedSetRangeByValue(System.String,System.Int64,System.Int64)">
+            <summary>
+                根据值范围获取SortedSet集合
+            </summary>
+            <param name="setId"></param>
+            <param name="minValue"></param>
+            <param name="maxValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetSortedSetLength(System.String)">
+            <summary>
+                获取SortedSet长度
+            </summary>
+            <param name="setId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetSortedSetLength(System.String,System.Double,System.Double)">
+            <summary>
+                根据值范围儿取SortedSet长度
+            </summary>
+            <param name="setId"></param>
+            <param name="minValue"></param>
+            <param name="maxValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetItemRankFromSortedSet(System.String,System.String,System.String)">
+            <summary>
+                获取某个SortedSet所在的序号
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetItemScoreFromSortedSet(System.String,System.String)">
+            <summary>
+                获取某个SortedSet的score值
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SetSortedSetItemIncrement(System.String,System.String,System.Double)">
+            <summary>
+                SortedSet计数器+
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="score"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.SortedSetItemDecrement(System.String,System.String,System.Double)">
+            <summary>
+                SortedSet计数器-
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <param name="score"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.RemoveItemFromSortedSet(System.String,System.String)">
+            <summary>
+                称除SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.RemoveByRankFromSortedSet(System.String,System.Int64,System.Int64)">
+            <summary>
+                移除某个序号范围的SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="fromRank"></param>
+            <param name="toRank"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.RemoveByScoreFromSortedSet(System.String,System.Double,System.Double)">
+            <summary>
+                移除某个score范围的SortedSet
+            </summary>
+            <param name="setId"></param>
+            <param name="minValue"></param>
+            <param name="maxValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Enqueue(System.String,System.String)">
+            <summary>
+                进队
+            </summary>
+            <param name="listId"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Dnqueue(System.String)">
+            <summary>
+                出队
+            </summary>
+            <param name="listId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Enqueue``1(System.String,``0)">
+            <summary>
+                进队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="t"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Dnqueue``1(System.String)">
+            <summary>
+                出队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.GetList``1(System.String,System.Int64,System.Int64)">
+            <summary>
+                获取队列元素
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="start"></param>
+            <param name="stop"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.QueueCount(System.String)">
+            <summary>
+                获取队列长度
+            </summary>
+            <param name="listId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.REnqueue(System.String,System.String)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <param name="listId"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.REnqueue``1(System.String,``0)">
+            <summary>
+            从出队方向入队
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="listId"></param>
+            <param name="t"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Subscribe(System.String,System.Action{System.String,System.String})">
+            <summary>
+                订阅消息
+            </summary>
+            <param name="channelPrefix"></param>
+            <param name="action"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Unsubscribe(System.String)">
+            <summary>
+                取消订阅
+            </summary>
+            <param name="channelPrefix"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Publish(System.String,System.String)">
+            <summary>
+                发布消息
+            </summary>
+            <param name="channelPrefix"></param>
+            <param name="msg"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.Lock(System.String,System.Int32,System.Int32)">
+            <summary>
+            分布式锁
+            </summary>
+            <param name="key"></param>
+            <param name="timeout"></param>
+            <param name="rolling"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Interface.IRedisOperation.UnLock(System.String)">
+            <summary>
+            移除锁
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="T:Wenli.Drive.Redis.RedisConfig">
+            <summary>
+                redis配置类
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.SectionName">
+            <summary>
+                当前配置名称
+                此属性为必须
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.Type">
+            <summary>
+                配置类型
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.Password">
+            <summary>
+                密码
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.Masters">
+            <summary>
+                主Redis库，亦可是sentinel服务器地址
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.Slaves">
+            <summary>
+                从redis库
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.ServiceName">
+            <summary>
+                哨兵模式下服务名称
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.DefaultDatabase">
+            <summary>
+                非集群模式下可以指定读写db
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.AllowAdmin">
+            <summary>
+                管理员模式
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.KeepAlive">
+            <summary>
+                连接保持(s)
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.ConnectTimeout">
+            <summary>
+                连接超时(ms)
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.ConnectRetry">
+            <summary>
+                重连次数
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.BusyRetry">
+            <summary>
+                任务忙重试次数
+                0-50之间的整数
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.BusyRetryWaitMS">
+            <summary>
+                重试等待时长(ms)
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.PoolSize">
+            <summary>
+                连接池大小
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.CommandTimeout">
+            <summary>
+                命令超时时间 (ms)
+            </summary>
+        </member>
+        <member name="P:Wenli.Drive.Redis.RedisConfig.Extention">
+            <summary>
+            扩展
+            有一些redis因为禁用了某些命令需要添加如下部分
+            $CLIENT=,$CLUSTER=,$CONFIG=,$ECHO=,$INFO=,$PING=
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisConfig.GetConfig">
+            <summary>
+                获取默认redis配置类
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisConfig.GetConfig(System.String)">
+            <summary>
+                获取指定的redis配置类
+            </summary>
+            <param name="sectionName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisConfig.GetConfig(System.String,System.String)">
+            <summary>
+                从指定位置读取配置
+            </summary>
+            <param name="fileName"></param>
+            <param name="sectionName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisConfig.GetConfig(System.Configuration.Configuration,System.String)">
+            <summary>
+                从指定Configuration中读取配置
+            </summary>
+            <param name="config"></param>
+            <param name="sectionName"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Wenli.Drive.Redis.RedisHelper">
+            <summary>
+                redis容器类
+                此类不要直接new(),需要用RedisHelperBuilder来构造
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelper.CreateInstance(Wenli.Drive.Redis.Interface.IRedisHelper)">
+            <summary>
+                ioc所需初始化方法
+            </summary>
+            <param name="redisHelper"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelper.Init(System.String)">
+            <summary>
+                初始化
+                使用RedisHelperBuilder.Build请不要调用此方法
+            </summary>
+            <param name="section"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelper.Init(System.String,System.Int32,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            初始化
+            </summary>
+            <param name="sectionName"></param>
+            <param name="type"></param>
+            <param name="master"></param>
+            <param name="password"></param>
+            <param name="serviceName"></param>
+            <param name="poolSize"></param>
+            <param name="busyRetry"></param>
+            <param name="busyRetryWaitMS"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelper.Init(Wenli.Drive.Redis.RedisConfig)">
+            <summary>
+                初始化
+                使用RedisHelperBuilder.Build请不要调用此方法
+            </summary>
+            <param name="config"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelper.GetRedisOperation(System.Int32)">
+            <summary>
+                redis操作
+            </summary>
+        </member>
+        <member name="T:Wenli.Drive.Redis.RedisHelperBuilder">
+            <summary>
+                RedisClient容器
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelperBuilder.#cctor">
+            <summary>
+                RedisClient容器
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelperBuilder.Build``1">
+            <summary>
+                根据指定配置依赖注入产生一个新的实例
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelperBuilder.Build``1(System.String)">
+            <summary>
+                根据指定配置依赖注入产生一个新的实例
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="section">redis配置实例名称RedisInfo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.RedisHelperBuilder.Build(System.String)">
+            <summary>
+                根据指定配置产生一个新的实例
+            </summary>
+            <param name="section"></param>
+            <returns></returns>
+        </member>
+        <member name="E:Wenli.Drive.Redis.Tool.Log4NetHelper.OnErrored">
+            <summary>
+            异常触发事件
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.Log4NetHelper.WriteLog(System.String)">
+            <summary>
+            普通的文件记录日志
+            </summary>
+            <param name="info"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.Log4NetHelper.WriteDebugLog(System.String)">
+            <summary>
+            调试的文件记录日志
+            </summary>
+            <param name="info"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.Log4NetHelper.WriteLog(System.String,System.Exception)">
+            <summary>
+            错误日志
+            </summary>
+            <param name="info"></param>
+            <param name="se"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.Log4NetHelper.WriteErrLog(System.String,System.Exception,System.Object[])">
+            <summary>
+            错误日志
+            </summary>
+            <param name="funcName"></param>
+            <param name="exp"></param>
+            <param name="paramList"></param>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.Log4NetHelper.GetErrorLogStr(System.String,System.Exception,System.Object[])">
+            <summary>
+            获取错误日志内容
+            </summary>
+            <param name="funcName"></param>
+            <param name="exp"></param>
+            <param name="paramList"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.Log4NetHelper.GetIPAdress">
+            <summary>
+            获取客户端的IP
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.Log4NetHelper.GetSerializerString(System.Object)">
+            <summary>
+            序列化对象
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Wenli.Drive.Redis.Tool.SerializeHelper">
+            <summary>
+            序列化类
+            </summary>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.SerializeHelper.Serialize(System.Object)">
+            <summary>
+                newton.json序列化,日志参数专用
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.SerializeHelper.Deserialize``1(System.String)">
+            <summary>
+                newton.json反序列化,日志参数专用
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="json"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.SerializeHelper.ByteSerialize(System.Object)">
+            <summary>
+            二进制序列化
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Wenli.Drive.Redis.Tool.SerializeHelper.ByteDeserialize``1(System.Byte[])">
+            <summary>
+            二进制反序列化
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

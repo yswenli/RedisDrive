@@ -78,28 +78,21 @@ namespace Wenli.Drive.Redis.Interface
         bool StringSetIfNotExists(string key, string value);
 
         /// <summary>
+        ///  设置一个值，仅在不存在的时候设置
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="ts">超时时间</param>
+        /// <returns></returns>
+        bool StringSetIfNotExists(string key, string value, TimeSpan ts);
+
+        /// <summary>
         ///     获取key的同时set该Key
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
         string StringGetSet(string key, string value);
-
-        /// <summary>
-        /// 获取全部keys
-        /// </summary>
-        /// <param name="patten"></param>
-        /// <returns></returns>
-        List<string> StringGetKeys(string patten = "*");
-
-        /// <summary>
-        /// 获取全部keys
-        /// </summary>        
-        /// <param name="pageSize"></param>
-        /// <param name="dbIndex"></param>
-        /// <param name="patten"></param>
-        /// <returns></returns>
-        List<string> StringGetKeys(int pageSize, int dbIndex = -1, string patten = "*");
 
         /// <summary>
         ///     获取key
@@ -125,6 +118,14 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="key"></param>
         /// <returns></returns>
         T StringGet<T>(string key) where T : class, new();
+
+        /// <summary>
+        /// 批量获取
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        List<T> BatchStringGet<T>(List<string> keys) where T : class, new();
 
         /// <summary>
         ///     获取kv列表集合
@@ -177,12 +178,20 @@ namespace Wenli.Drive.Redis.Interface
         bool KeyRename(string oldKey, string newKey);
 
         /// <summary>
-        ///     key计数器
+        ///     key计数器(加上相应的value)
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
         double StringIncrement(string key, double value);
+
+        /// <summary>
+        ///     key计数器(减去相应的value)
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        double StringDecrement(string key, double value);
 
         /// <summary>
         ///     追加value
@@ -242,6 +251,14 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="key"></param>
         /// <returns></returns>
         bool HashDelete(string hashId, string key);
+
+        /// <summary>
+        /// 批量移除hash
+        /// </summary>
+        /// <param name="hashId"></param>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        long HashDelete(string hashId, string[] keys);
 
         /// <summary>
         ///     hash计数器
@@ -348,6 +365,14 @@ namespace Wenli.Drive.Redis.Interface
         /// <returns></returns>
         List<string> GetValuesFromHash(string hashId, List<string> keys);
 
+        /// <summary>
+        /// 从指定hashid,keys中获取指定hash集合
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hashId"></param>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        Dictionary<string, T> GetValuesDicFromHash<T>(string hashId, List<string> keys) where T : class, new();
         #endregion
 
         #region Set
@@ -430,7 +455,7 @@ namespace Wenli.Drive.Redis.Interface
         List<string> GetSortedSetRangeByRank(string setId, long fromRank, long toRank, string order = "desc");
 
         /// <summary>
-        ///     根据score查询SortedSet集合
+        ///     查询SortedSet集合
         /// </summary>
         /// <param name="setId"></param>
         /// <param name="fromRank"></param>
@@ -451,6 +476,19 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="orderBy"></param>
         /// <returns></returns>
         PagedList<string> GetSortedSetRangeByRankWithSocres(string setid, long min, long max, int pageIndex = 1,
+            int pageSize = 20, bool orderBy = true);
+
+        /// <summary>
+        /// 根据score分页查询SortedSet集合
+        /// </summary>
+        /// <param name="setid"></param>
+        /// <param name="minScore"></param>
+        /// <param name="maxScore"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
+        PagedList<string> GetSortedSetRangeByRankBySocre(string setid, double minScore, double maxScore, int pageIndex = 1,
             int pageSize = 20, bool orderBy = true);
 
         /// <summary>
@@ -644,7 +682,7 @@ namespace Wenli.Drive.Redis.Interface
         /// 移除锁
         /// </summary>
         /// <param name="key"></param>
-        void UnLock(string key);
+        void UnLock(string key = "");
         #endregion
     }
 }

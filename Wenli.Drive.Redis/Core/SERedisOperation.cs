@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using StackExchange.Redis;
 using Wenli.Drive.Redis.Data;
 using Wenli.Drive.Redis.Interface;
@@ -38,6 +39,7 @@ namespace Wenli.Drive.Redis.Core
         private readonly int _busyRetryWaitMS = 200;
 
         private readonly int _dbIndex = -1;
+
         private readonly string _sectionName;
 
         /// <summary>
@@ -53,8 +55,8 @@ namespace Wenli.Drive.Redis.Core
             _dbIndex = dbIndex;
             _busyRetry = busyRetry;
             _busyRetryWaitMS = busyRetryWaitMS;
-            if ((_busyRetry < 0) || (_busyRetry > 50))
-                throw new Exception("重试次数有误，请输入0-50之间整数");
+            if ((_busyRetry < 0) || (_busyRetry > 10000))
+                throw new Exception("重试次数有误，请输入0-10000之间整数");
             if ((_busyRetryWaitMS < 100) || (_busyRetryWaitMS > 3000))
                 throw new Exception("失败重试等待时长有误，请输入100-3000之间整数");
         }
@@ -78,15 +80,15 @@ namespace Wenli.Drive.Redis.Core
 
                     if (ex is TimeoutException)
                     {
-                        retryCountMsg = string.Format("TimeoutException Redis<T> {0}操作超时，等待随后重试。当前已经重试：{1};ex:{2}", func.Method.Name, counter, ex.Message);
+                        retryCountMsg = string.Format("TimeoutException Redis<T> {0}操作超时，等待随后重试。当前已经重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
                     }
                     else if (ex is RedisConnectionException)
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException.Message);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
                     }
                     else if (ex is RedisServerException && ex.Message.Contains("MOVED"))
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.Message);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
                     }
                     else
                     {
@@ -94,7 +96,7 @@ namespace Wenli.Drive.Redis.Core
                         throw ex;
                     }
 
-                    Log4NetHelper.WriteLog(retryCountMsg);
+                    Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, new Exception(retryCountMsg));
 
                     if (counter > _busyRetry)
                     {
@@ -102,7 +104,11 @@ namespace Wenli.Drive.Redis.Core
                         throw ex;  // 大于重试次数，将直接抛出去
                     }
 
-                    Thread.Sleep(counter * _busyRetryWaitMS);
+                    var actionSpan = counter * _busyRetryWaitMS;
+
+                    if (actionSpan >= 10 * 1000) actionSpan = 10 * 1000;
+
+                    Thread.Sleep(actionSpan);
 
                 }
             }
@@ -121,21 +127,22 @@ namespace Wenli.Drive.Redis.Core
                 }
                 catch (Exception ex)
                 {
+
                     counter++;
 
                     string retryCountMsg = string.Empty;
 
                     if (ex is TimeoutException)
                     {
-                        retryCountMsg = string.Format("TimeoutException Redis<T> {0}操作超时，等待随后重试。当前已经重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                        retryCountMsg = string.Format("TimeoutException Redis<T> {0}操作超时，等待随后重试。当前已经重试：{1};ex:{2}", action.Method.Name, counter, ex.Message);
                     }
                     else if (ex is RedisConnectionException)
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException.Message);
                     }
                     else if (ex is RedisServerException && ex.Message.Contains("MOVED"))
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.Message);
                     }
                     else
                     {
@@ -143,7 +150,7 @@ namespace Wenli.Drive.Redis.Core
                         throw ex;
                     }
 
-                    Log4NetHelper.WriteLog(retryCountMsg);
+                    Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, new Exception(retryCountMsg));
 
                     if (counter > _busyRetry)
                     {
@@ -151,7 +158,11 @@ namespace Wenli.Drive.Redis.Core
                         throw ex;  // 大于重试次数，将直接抛出去
                     }
 
-                    Thread.Sleep(counter * _busyRetryWaitMS);
+                    var actionSpan = counter * _busyRetryWaitMS;
+
+                    if (actionSpan >= 10 * 1000) actionSpan = 10 * 1000;
+
+                    Thread.Sleep(actionSpan);
                 }
             }
         }
@@ -244,7 +255,7 @@ namespace Wenli.Drive.Redis.Core
                 else
                     using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
                     {
-                        cnn.GetDatabase().StringSet(key, value);
+                        bResult = cnn.GetDatabase().StringSet(key, value);
                     }
                 return bResult;
             });
@@ -273,7 +284,6 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <param name="timeout"></param>
         /// <returns></returns>
         public bool StringSetIfNotExists(string key, string value)
         {
@@ -282,6 +292,24 @@ namespace Wenli.Drive.Redis.Core
                 using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
                 {
                     return cnn.GetDatabase().StringSet(key, value, when: When.NotExists);
+                }
+            });
+        }
+
+        /// <summary>
+        ///  设置一个值，仅在不存在的时候设置
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="ts">超时时间</param>
+        /// <returns></returns>
+        public bool StringSetIfNotExists(string key, string value, TimeSpan ts)
+        {
+            return DoWithRetry(() =>
+            {
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    return cnn.GetDatabase().StringSet(key, value, ts, when: When.NotExists);
                 }
             });
         }
@@ -303,54 +331,8 @@ namespace Wenli.Drive.Redis.Core
             });
         }
 
-        /// <summary>
-        /// 获取全部keys
-        /// </summary>
-        /// <param name="patten"></param>
-        /// <returns></returns>
-        [Obsolete("此方法只用于兼容老数据,且本方法只能查询db0，建议使用sortedset来保存keys")]
-        public List<string> StringGetKeys(string patten = "*")
-        {
-            return DoWithRetry(() =>
-            {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.Keys(patten);
-                }
-            });
-        }
 
-        /// <summary>
-        /// 获取全部keys
-        /// </summary>
-        /// <param name="pageSize"></param>
-        /// /// <param name="dbIndex"></param>
-        /// <param name="patten"></param>
-        /// <returns></returns>
-        [Obsolete("此方法只用于兼容老数据，建议使用sortedset来保存keys")]
-        public List<string> StringGetKeys(int pageSize, int dbIndex = -1, string patten = "*")
-        {
-            return DoWithRetry(() =>
-            {
-                List<string> keys = new List<string>();
 
-                using (var cnn = new SERedisConnection(_sectionName, dbIndex == -1 ? _dbIndex : dbIndex))
-                {
-                    var result = cnn.GetDatabase().ScriptEvaluate(LuaScript.Prepare("return  redis.call('KEYS', '*')"), CommandFlags.PreferSlave);
-
-                    if (!result.IsNull)
-                    {
-                        var list = (RedisResult[])result;
-                        foreach (var item in list)
-                        {
-                            var key = (RedisKey)item;
-                            keys.Add(key.ToString());
-                        }
-                    }
-                }
-                return keys;
-            });
-        }
         /// <summary>
         ///     获取key
         /// </summary>
@@ -400,6 +382,40 @@ namespace Wenli.Drive.Redis.Core
                 if (!string.IsNullOrWhiteSpace(str))
                     return SerializeHelper.Deserialize<T>(str);
                 return default(T);
+            });
+        }
+
+        /// <summary>
+        /// 批量获取
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public List<T> BatchStringGet<T>(List<string> keys) where T : class, new()
+        {
+            return DoWithRetry(() =>
+            {
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    var batch = cnn.GetDatabase().CreateBatch();
+
+                    List<Task<RedisValue>> tasks = new List<Task<RedisValue>>();
+
+                    foreach (var key in keys)
+                    {
+                        tasks.Add(batch.StringGetAsync(key));
+                    }
+                    batch.Execute();
+
+                    List<T> result = new List<T>();
+
+                    foreach (var task in tasks)
+                    {
+                        result.Add(SerializeHelper.Deserialize<T>(task.GetAwaiter().GetResult()));
+                    }
+
+                    return result;
+                }
             });
         }
 
@@ -536,6 +552,23 @@ namespace Wenli.Drive.Redis.Core
         }
 
         /// <summary>
+        ///     key计数器(减去相应的value)
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public double StringDecrement(string key, double value)
+        {
+            return DoWithRetry(() =>
+            {
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    return cnn.GetDatabase().StringDecrement(key, value);
+                }
+            });
+        }
+
+        /// <summary>
         ///     追加value
         /// </summary>
         /// <param name="key"></param>
@@ -652,6 +685,29 @@ namespace Wenli.Drive.Redis.Core
                 using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
                 {
                     return cnn.GetDatabase().HashDelete(hashId, key);
+                }
+            });
+        }
+
+        /// <summary>
+        /// 批量移除hash
+        /// </summary>
+        /// <param name="hashId"></param>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public long HashDelete(string hashId, string[] keys)
+        {
+            return DoWithRetry(() =>
+            {
+                var hkeys = new RedisValue[keys.Length];
+
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    hkeys[i] = keys[i];
+                }
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    return cnn.GetDatabase().HashDelete(hashId, hkeys);
                 }
             });
         }
@@ -951,6 +1007,38 @@ namespace Wenli.Drive.Redis.Core
         }
 
         /// <summary>
+        /// 从指定hashid,keys中获取指定hash集合
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hashId"></param>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public Dictionary<string, T> GetValuesDicFromHash<T>(string hashId, List<string> keys) where T : class, new()
+        {
+            return DoWithRetry(() =>
+            {
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    var dic = new Dictionary<string, T>();
+                    if ((keys != null) && (keys.Count > 0))
+                    {
+                        var rv = new RedisValue[keys.Count];
+                        for (var i = 0; i < keys.Count; i++)
+                            rv[i] = keys[i];
+                        var vlts = cnn.GetDatabase().HashGet(hashId, rv);
+                        for (int i = 0; i < vlts.Length; i++)
+                            if (!string.IsNullOrEmpty(vlts[i]))
+                            {
+                                var obj = SerializeHelper.Deserialize<T>(vlts[i]);
+                                if (obj != null)
+                                    dic.Add(rv[i], obj);
+                            }
+                    }
+                    return dic;
+                }
+            });
+        }
+        /// <summary>
         ///     从指定hashid,keys中获取指定hash集合
         /// </summary>
         /// <param name="hashId"></param>
@@ -1193,8 +1281,8 @@ namespace Wenli.Drive.Redis.Core
         ///     获取SortedSet集合区间
         /// </summary>
         /// <param name="setid"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
+        /// <param name="min">最小score</param>
+        /// <param name="max">最大score</param>
         /// <param name="pageIndex"></param>
         /// <param name="pageSize"></param>
         /// <param name="orderBy"></param>
@@ -1206,7 +1294,7 @@ namespace Wenli.Drive.Redis.Core
             {
                 using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
                 {
-                    var count = cnn.GetDatabase().SortedSetLength(setid, min, max);
+                    var count = cnn.GetDatabase().SortedSetLength(setid); //此处无法正确获取数量
                     if (count > 0)
                     {
                         var list = cnn.GetDatabase()
@@ -1236,6 +1324,52 @@ namespace Wenli.Drive.Redis.Core
                 }
             });
         }
+
+        /// <summary>
+        /// 获取SortedSet集合区间
+        /// </summary>
+        /// <param name="setid"></param>
+        /// <param name="minScore"></param>
+        /// <param name="maxScore"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
+        public PagedList<string> GetSortedSetRangeByRankBySocre(string setid, double minScore, double maxScore, int pageIndex = 1,
+            int pageSize = 20, bool orderBy = true)
+        {
+            return DoWithRetry(() =>
+            {
+                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                {
+                    var count = cnn.GetDatabase().SortedSetLength(setid, minScore, maxScore);
+                    if (count > 0)
+                    {
+                        var list = cnn.GetDatabase().SortedSetRangeByScore(setid, minScore, maxScore, Exclude.None, orderBy ? Order.Ascending : Order.Descending, (pageIndex - 1) * pageSize, pageSize);
+
+                        if (list != null && list.Any())
+                        {
+                            var result = new List<string>();
+
+                            foreach (var item in list)
+                            {
+                                result.Add(item.ToString());
+                            }
+
+                            return new PagedList<string>
+                            {
+                                PageIndex = pageIndex,
+                                PageSize = pageSize,
+                                Count = count,
+                                List = result
+                            };
+                        }
+                    }
+                    return new PagedList<string>();
+                }
+            });
+        }
+
 
         /// <summary>
         ///     根据值范围获取SortedSet集合
@@ -1561,7 +1695,6 @@ namespace Wenli.Drive.Redis.Core
                 }
             });
         }
-
         /// <summary>
         /// 从出队方向入队
         /// </summary>
@@ -1594,6 +1727,7 @@ namespace Wenli.Drive.Redis.Core
                 }
             });
         }
+
         #endregion
 
         #region SubPush
@@ -1612,9 +1746,12 @@ namespace Wenli.Drive.Redis.Core
                 if (subcnn == null)
                     subcnn = new SERedisConnection(_sectionName, _dbIndex);
                 var pub = subcnn.GetSubscriber();
-                pub.Subscribe(new RedisChannel(channelPrefix, RedisChannel.PatternMode.Auto), (x, y) =>
+
+                var channel = new RedisChannel(channelPrefix, RedisChannel.PatternMode.Auto);
+
+                pub.Subscribe(channel, (c, v) =>
                 {
-                    action(x.ToString(), y.ToString());
+                    action?.Invoke(c.ToString(), v.ToString());
                 });
             });
         }

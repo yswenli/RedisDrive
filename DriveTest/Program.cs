@@ -384,9 +384,6 @@ namespace DriveTest
                     Console.ReadLine();
                     Console.WriteLine("string get/set test");
 
-                    Console.WriteLine("string all keys:{0}", redisHelper.GetRedisOperation().StringGetKeys().Count);
-                    Console.WriteLine("string all keys:{0}", redisHelper.GetRedisOperation().StringGetKeys(100).Count);
-
                     redisHelper.GetRedisOperation(12).StringSet("abcabcabc", "123123");
                     Console.WriteLine("写入key：abcabcabc，value：123123");
 
