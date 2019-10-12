@@ -95,6 +95,30 @@ namespace Wenli.Drive.Redis.Interface
         string StringGetSet(string key, string value);
 
         /// <summary>
+        /// 获取全部keys
+        /// </summary>
+        /// <param name="patten"></param>
+        /// <returns></returns>
+        List<string> StringGetKeys(string patten = "*");
+
+        /// <summary>
+        /// 获取全部keys
+        /// </summary>
+        /// <param name="dbIndex"></param>
+        /// <param name="patten"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        List<string> StringGetKeys(int pageSize, int dbIndex = -1, string patten = "*");
+
+        /// <summary>
+        /// 遍历获取所有keys
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <param name="patten"></param>
+        /// <param name="size"></param>
+        void StringGetKeys(Action<List<string>> callback, string patten = "*", int size = 1000);
+
+        /// <summary>
         ///     获取key
         /// </summary>
         /// <param name="key"></param>
@@ -452,7 +476,7 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="toRank"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        List<string> GetSortedSetRangeByRank(string setId, long fromRank, long toRank, string order = "desc");
+        List<string> GetSortedSetRangeByRank(string setId, long fromRank, long toRank, string order = "descending");
 
         /// <summary>
         ///     查询SortedSet集合
@@ -463,7 +487,7 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="order"></param>
         /// <returns></returns>
         Dictionary<string, double> GetSortedSetRangeByRankWithScores(string setId, long fromRank, long toRank,
-            string order = "desc");
+            string order = "descending");
 
         /// <summary>
         ///     根据score分页查询SortedSet集合
@@ -490,6 +514,27 @@ namespace Wenli.Drive.Redis.Interface
         /// <returns></returns>
         PagedList<string> GetSortedSetRangeByRankBySocre(string setid, double minScore, double maxScore, int pageIndex = 1,
             int pageSize = 20, bool orderBy = true);
+
+        /// <summary>
+        /// 获取zset
+        /// </summary>
+        /// <param name="setid"></param>
+        /// <param name="minScore"></param>
+        /// <param name="maxScore"></param>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
+        Dictionary<string, double> GetSortedSetRangeBySocreWithScore(string setid, double minScore, double maxScore, bool orderBy = true);
+
+        /// <summary>
+        /// 获取zset
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="setid"></param>
+        /// <param name="minScore"></param>
+        /// <param name="maxScore"></param>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
+        List<string> GetSortedSetRangeBySocre(string setid, double minScore, double maxScore, bool orderBy = true);
 
         /// <summary>
         ///     根据值范围获取SortedSet集合
@@ -523,7 +568,7 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="item"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        long? GetItemRankFromSortedSet(string setId, string item, string order = "desc");
+        long? GetItemRankFromSortedSet(string setId, string item, string order = "descending");
 
         /// <summary>
         ///     获取某个SortedSet的score值
@@ -549,7 +594,7 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="item"></param>
         /// <param name="score"></param>
         /// <returns></returns>
-        double SortedSetItemDecrement(string setId, string item, double score = -1);
+        double SortedSetItemDecrement(string setId, string item, double score = 1);
 
         /// <summary>
         ///     称除SortedSet
@@ -587,6 +632,13 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="listId"></param>
         /// <param name="value"></param>
         void Enqueue(string listId, string value);
+
+        /// <summary>
+        ///     批量进队
+        /// </summary>
+        /// <param name="listId"></param>
+        /// <param name="values"></param>
+        long Enqueue(string listId, List<string> values);
 
         /// <summary>
         ///     出队

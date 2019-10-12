@@ -102,6 +102,45 @@ namespace Wenli.Drive.Redis.Core
         }
 
         /// <summary>
+        /// 获取某服务器上全部keys(此方法目前只支持cluster模式) 
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <param name="patten"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public void Keys(Action<List<string>> callback, string patten = "*", int size = 10000)
+        {
+            if (callback == null) return;
+            var firstConfigEndPoint = _cnn.GetEndPoints()[0];
+            var anyServer = _cnn.GetServer(firstConfigEndPoint);
+
+            if (anyServer.ServerType == ServerType.Cluster)
+            {
+                // 这个操作比较费时， 使用从来处理
+                var allMasterNodes = anyServer.ClusterConfiguration.Nodes.Where(n => !n.IsSlave);
+
+                foreach (var masterNode in allMasterNodes)
+                {
+                    var runCommandServer = masterNode;
+
+                    // 驱动自带的 preferslave 不管用，还是运行在了master上，所以自己手动获取slave
+                    var allAliveSlaves = masterNode.Children.Where(r => r.IsConnected).ToList();
+                    if (allAliveSlaves.Count > 0)
+                    {
+                        runCommandServer = allAliveSlaves.First();
+                    }
+
+                    var resultsInOneServer = _cnn.GetServer(runCommandServer.EndPoint).Keys(pattern: patten, pageSize: size).Select(b => b.ToString()).ToList();
+                    callback(resultsInOneServer);
+                }
+            }
+            else
+            {
+                callback(anyServer.Keys(pattern: patten, pageSize: size).Select(b => b.ToString()).ToList());
+            }
+        }
+
+        /// <summary>
         /// 获取服务器信息
         /// </summary>
         /// <returns></returns>

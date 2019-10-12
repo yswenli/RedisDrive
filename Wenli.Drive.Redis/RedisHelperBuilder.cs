@@ -34,7 +34,12 @@ namespace Wenli.Drive.Redis
         static RedisHelperBuilder()
         {
             var appStr = ConfigurationManager.AppSettings["RedisClient"];
-            var appStrArr = appStr.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
+            if (string.IsNullOrWhiteSpace(appStr))
+            {
+                appStr = "Wenli.Drive.Redis.Core.SERedisHelper;Wenli.Drive.Redis,Version=1.0.0.0,Culture=neutral,PublicKeyToken=null";
+            }
+
+            var appStrArr = appStr.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
             _TObjectName = appStrArr[0];
             _AssemName = appStrArr[1];
             _AssemObject = Assembly.Load(_AssemName).CreateInstance(_TObjectName) as IRedisHelper;
@@ -49,7 +54,7 @@ namespace Wenli.Drive.Redis
         {
             var t = new T();
             var mf = t.GetType().GetMethod("CreateInstance");
-            mf.Invoke(t, new[] {_AssemObject});
+            mf.Invoke(t, new[] { _AssemObject });
             return t;
         }
 
@@ -63,9 +68,9 @@ namespace Wenli.Drive.Redis
         {
             var t = new T();
             var CreateInstance = t.GetType().GetMethod("CreateInstance");
-            CreateInstance.Invoke(t, new[] {_AssemObject});
+            CreateInstance.Invoke(t, new[] { _AssemObject });
             var Init = t.GetType().GetMethod("Init");
-            Init.Invoke(t, new[] {section});
+            Init.Invoke(t, new[] { section });
             return t;
         }
 
@@ -79,6 +84,27 @@ namespace Wenli.Drive.Redis
             var redisHelper = new RedisHelper();
             redisHelper.CreateInstance(_AssemObject);
             redisHelper.Init(section);
+            return redisHelper;
+        }
+        /// <summary>
+        /// 根据指定配置产生一个新的实例
+        /// </summary>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public static RedisHelper Build(RedisConfig config)
+        {
+            var redisHelper = new RedisHelper();
+            redisHelper.CreateInstance(_AssemObject);
+            redisHelper.Init(config);
+            return redisHelper;
+        }
+
+
+        public static RedisHelper Build(string name, string ipPort, string passwords)
+        {
+            var redisHelper = new RedisHelper();
+            redisHelper.CreateInstance(_AssemObject);
+            redisHelper.Init(name, ipPort, passwords);
             return redisHelper;
         }
     }

@@ -86,5 +86,17 @@ namespace Wenli.Drive.Redis
         {
             return _redisHelper.GetRedisOperation(dbIndex);
         }
+
+        /// <summary>
+        /// 自定义初始化
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <param name="ipPort"></param>
+        /// <param name="passwords"></param>
+        /// <param name="type"></param>
+        internal void Init(string serviceName, string ipPort, string passwords, int type = 0)
+        {
+            _redisHelper.Init(serviceName, type, ipPort, passwords, serviceName);
+        }
     }
 }
