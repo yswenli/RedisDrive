@@ -99,12 +99,19 @@ namespace Wenli.Drive.Redis
             return redisHelper;
         }
 
-
-        public static RedisHelper Build(string name, string ipPort, string passwords)
+        /// <summary>
+        /// 自定义指定配置方式
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <param name="ipPort"></param>
+        /// <param name="passwords"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static RedisHelper Build(string serviceName, string ipPort, string passwords, int type = 0)
         {
             var redisHelper = new RedisHelper();
             redisHelper.CreateInstance(_AssemObject);
-            redisHelper.Init(name, ipPort, passwords);
+            redisHelper.Init(serviceName, ipPort, passwords);
             return redisHelper;
         }
     }
