@@ -84,6 +84,7 @@
     <Compile Include="RedisConfig.cs" />
     <Compile Include="RedisHelper.cs" />
     <Compile Include="RedisHelperBuilder.cs" />
+    <Compile Include="RedisLocker.cs" />
     <Compile Include="Tool\Log4NetUtil.cs" />
     <Compile Include="Tool\SerializeHelper.cs" />
   </ItemGroup>

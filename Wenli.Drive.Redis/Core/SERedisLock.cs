@@ -9,6 +9,16 @@ namespace Wenli.Drive.Redis.Core
 
         private static readonly string _prex = "lock_";
 
+        int _timeout = 30 * 1000;
+
+        string _key = string.Empty;
+
+        string GetKey(string key)
+        {
+            return _prex + key;
+        }
+
+
         /// <summary>
         /// 利用StringSetIfNotExists实现锁
         /// </summary>
@@ -18,16 +28,18 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         public bool Lock(string key, int timeout = 30 * 1000, int rolling = 500)
         {
-            var lockKey = _prex + key;
-            var expireDateTime = DateTime.Now.AddMilliseconds(timeout);
-            long expires = expireDateTime.Ticks;
-            String expiresStr = expires.ToString();
+            _key = key;
 
-            while (timeout > rolling)
+            _timeout = timeout;
+
+            var ts = TimeSpan.FromMilliseconds(_timeout);
+
+            String expiresStr = DateTime.Now.Add(ts).Ticks.ToString();
+
+            while (_timeout > rolling)
             {
-                if (this.StringSetIfNotExists(lockKey, expiresStr))
+                if (this.StringSetIfNotExists(GetKey(_key), expiresStr, ts))
                 {
-                    this.KeyExpire(lockKey, expireDateTime);
                     return true;
                 }
                 timeout -= rolling;
@@ -35,12 +47,20 @@ namespace Wenli.Drive.Redis.Core
             }
             return false;
         }
+
+
         /// <summary>
         /// 移除lock
         /// </summary>
-        public void UnLock(string key)
+        /// <param name="key"></param>
+        public void UnLock(string key = "")
         {
-            this.KeyDelete(_prex + key);
+            if (string.IsNullOrEmpty(key))
+            {
+                key = _key;
+            }
+
+            this.KeyExpire(GetKey(key), _timeout);
         }
 
     }
