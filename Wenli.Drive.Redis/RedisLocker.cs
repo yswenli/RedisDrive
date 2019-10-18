@@ -37,7 +37,11 @@ namespace Wenli.Drive.Redis
         public RedisLocker(string sectionName, string key, int timeout = 30 * 1000, int rolling = 50)
         {
             _redisHelper = RedisHelperBuilder.Build(sectionName);
-            _redisHelper.GetRedisOperation().Lock(key, timeout, rolling);
+
+            if (!_redisHelper.GetRedisOperation().Lock(key, timeout, rolling))
+            {
+                throw new Exception("RedisLocker申请锁已超时！");
+            }
         }
 
         /// <summary>
@@ -50,7 +54,11 @@ namespace Wenli.Drive.Redis
         public RedisLocker(RedisConfig redisConfig, string key, int timeout = 30 * 1000, int rolling = 50)
         {
             _redisHelper = RedisHelperBuilder.Build(redisConfig);
-            _redisHelper.GetRedisOperation().Lock(key, timeout, rolling);
+
+            if (!_redisHelper.GetRedisOperation().Lock(key, timeout, rolling))
+            {
+                throw new Exception("RedisLocker申请锁已超时！");
+            }
         }
 
         /// <summary>
@@ -66,7 +74,11 @@ namespace Wenli.Drive.Redis
         public RedisLocker(string serviceName, string ipPort, string passwords, int type, string key, int timeout = 30 * 1000, int rolling = 50)
         {
             _redisHelper = RedisHelperBuilder.Build(serviceName, ipPort, passwords, type);
-            _redisHelper.GetRedisOperation().Lock(key, timeout, rolling);
+
+            if (!_redisHelper.GetRedisOperation().Lock(key, timeout, rolling))
+            {
+                throw new Exception("RedisLocker申请锁已超时！");
+            }
         }
 
         /// <summary>
