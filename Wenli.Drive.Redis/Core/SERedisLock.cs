@@ -60,7 +60,7 @@ namespace Wenli.Drive.Redis.Core
                 key = _key;
             }
 
-            this.KeyExpire(GetKey(key), _timeout);
+            this.KeyDelete(GetKey(key));
         }
 
     }
