@@ -33,12 +33,7 @@ namespace Wenli.Drive.Redis
         /// </summary>
         static RedisHelperBuilder()
         {
-            var appStr = ConfigurationManager.AppSettings["RedisClient"];
-            if (string.IsNullOrWhiteSpace(appStr))
-            {
-                appStr = "Wenli.Drive.Redis.Core.SERedisHelper;Wenli.Drive.Redis,Version=1.0.0.0,Culture=neutral,PublicKeyToken=null";
-            }
-
+            var appStr = "Wenli.Drive.Redis.Core.SERedisHelper;Wenli.Drive.Redis,Version=1.0.0.0,Culture=neutral,PublicKeyToken=null";
             var appStrArr = appStr.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
             _TObjectName = appStrArr[0];
             _AssemName = appStrArr[1];
@@ -74,18 +69,6 @@ namespace Wenli.Drive.Redis
             return t;
         }
 
-        /// <summary>
-        ///     根据指定配置产生一个新的实例
-        /// </summary>
-        /// <param name="section"></param>
-        /// <returns></returns>
-        public static RedisHelper Build(string section)
-        {
-            var redisHelper = new RedisHelper();
-            redisHelper.CreateInstance(_AssemObject);
-            redisHelper.Init(section);
-            return redisHelper;
-        }
         /// <summary>
         /// 根据指定配置产生一个新的实例
         /// </summary>

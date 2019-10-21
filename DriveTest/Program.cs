@@ -31,6 +31,32 @@ namespace DriveTest
 
             Console.WriteLine("输入s 测试哨兵模式，输入c测试cluster模式，M为连续，l为锁测试，其它为单实例模式");
 
+
+            var redisConfig = new RedisConfig()
+            {
+                Type = RedisConfigType.Single,
+                Masters = "127.0.0.1:6379",
+                Slaves = "127.0.0.1:6380",
+                Password = "12321",
+                DefaultDatabase = 0
+            };
+
+
+            var sentinelConfig = new RedisConfig()
+            {
+                Type = RedisConfigType.Sentinel,
+                Masters = "127.0.0.1:26379",
+                Password = "12321",
+                ServiceName = "mymaster"
+            };
+
+            var clusterConfig = new RedisConfig()
+            {
+                Type = RedisConfigType.Cluster,
+                Masters = "127.0.0.1:16379,127.0.0.1:16380,127.0.0.1:16381",
+                Password = "12321"
+            };
+
             while (true)
             {
 
@@ -41,7 +67,7 @@ namespace DriveTest
                     #region sentinel
                     Console.WriteLine("Wenli.Drive.Redis test 进入哨兵模式---------------------");
 
-                    using (var redisHelper = RedisHelperBuilder.Build("ClusterConfig"))
+                    using (var redisHelper = RedisHelperBuilder.Build(clusterConfig))
                     {
 
                         #region string
@@ -130,7 +156,7 @@ namespace DriveTest
                     #region cluster
                     Console.WriteLine("Wenli.Drive.Redis test 进入集群模式---------------------");
 
-                    var redisHelper = RedisHelperBuilder.Build("ClusterConfig");
+                    var redisHelper = RedisHelperBuilder.Build(clusterConfig);
 
                     #region string
                     Console.ReadLine();
@@ -214,7 +240,7 @@ namespace DriveTest
 
                     var td1 = new Thread(new ThreadStart(() =>
                     {
-                        using (var redisHelper = RedisHelperBuilder.Build("SentinelConfig"))
+                        using (var redisHelper = RedisHelperBuilder.Build(sentinelConfig))
                         {
                             Parallel.For(0, 100000, countIndex =>
                             {
@@ -257,7 +283,7 @@ namespace DriveTest
                     {
                         Parallel.For(0, 100000, countIndex =>
                         {
-                            using (var redisHelper = RedisHelperBuilder.Build("SentinelConfig"))
+                            using (var redisHelper = RedisHelperBuilder.Build(sentinelConfig))
                             {
                                 #region string
                                 Console.WriteLine("string get/set test");
@@ -307,7 +333,7 @@ namespace DriveTest
                 }
                 else if (c.ToLower() == "l")
                 {
-                    var redisHelper = RedisHelperBuilder.Build("RedisConfig");
+                    var redisHelper = RedisHelperBuilder.Build(redisConfig);
 
                     Stopwatch sw = new Stopwatch();
 
@@ -378,7 +404,7 @@ namespace DriveTest
                     #region default redis
                     Console.WriteLine("Wenli.Drive.Redis test 进入单实例模式---------------------");
 
-                    var redisHelper = RedisHelperBuilder.Build("RedisConfig");
+                    var redisHelper = RedisHelperBuilder.Build(redisConfig);
 
                     #region string
                     Console.ReadLine();

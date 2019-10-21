@@ -44,16 +44,6 @@ namespace Wenli.Drive.Redis
         }
 
         /// <summary>
-        ///     初始化
-        ///     使用RedisHelperBuilder.Build请不要调用此方法
-        /// </summary>
-        /// <param name="section"></param>
-        /// <returns></returns>
-        internal void Init(string section)
-        {
-            _redisHelper.Init(section);
-        }
-        /// <summary>
         /// 初始化
         /// </summary>
         /// <param name="sectionName"></param>
@@ -64,7 +54,7 @@ namespace Wenli.Drive.Redis
         /// <param name="poolSize"></param>
         /// <param name="busyRetry"></param>
         /// <param name="busyRetryWaitMS"></param>
-        internal void Init(string sectionName, int type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
+        internal void Init(string sectionName, RedisConfigType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
         {
             _redisHelper.Init(sectionName, type, master, password, serviceName, poolSize, busyRetry, busyRetryWaitMS);
         }
@@ -94,7 +84,7 @@ namespace Wenli.Drive.Redis
         /// <param name="ipPort"></param>
         /// <param name="passwords"></param>
         /// <param name="type"></param>
-        internal void Init(string serviceName, string ipPort, string passwords, int type = 0)
+        internal void Init(string serviceName, string ipPort, string passwords, RedisConfigType type = 0)
         {
             _redisHelper.Init(serviceName, type, ipPort, passwords, serviceName);
         }

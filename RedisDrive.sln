@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.902
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wenli.Drive.Redis", "Wenli.Drive.Redis\Wenli.Drive.Redis.csproj", "{119B14B9-5934-46A0-9254-E814E22DA67B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wenli.Drive.Redis", "Wenli.Drive.Redis\Wenli.Drive.Redis.csproj", "{224E5838-57C6-41E8-B2DE-AF1BEF7F6EC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriveTest", "DriveTest\DriveTest.csproj", "{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisDriveTest", "RedisDriveTest\RedisDriveTest.csproj", "{40C27CD0-B288-46B0-9390-22C747B1D3B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriveTest", "DriveTest\DriveTest.csproj", "{7E8B59D4-683F-4393-864E-C315A79D5A97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,20 +13,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{119B14B9-5934-46A0-9254-E814E22DA67B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{119B14B9-5934-46A0-9254-E814E22DA67B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{119B14B9-5934-46A0-9254-E814E22DA67B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{119B14B9-5934-46A0-9254-E814E22DA67B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{16702421-6FB1-4BFB-ABBD-C7F201E4FB75}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40C27CD0-B288-46B0-9390-22C747B1D3B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40C27CD0-B288-46B0-9390-22C747B1D3B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40C27CD0-B288-46B0-9390-22C747B1D3B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40C27CD0-B288-46B0-9390-22C747B1D3B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{224E5838-57C6-41E8-B2DE-AF1BEF7F6EC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{224E5838-57C6-41E8-B2DE-AF1BEF7F6EC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{224E5838-57C6-41E8-B2DE-AF1BEF7F6EC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{224E5838-57C6-41E8-B2DE-AF1BEF7F6EC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E8B59D4-683F-4393-864E-C315A79D5A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E8B59D4-683F-4393-864E-C315A79D5A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E8B59D4-683F-4393-864E-C315A79D5A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E8B59D4-683F-4393-864E-C315A79D5A97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D2EC9F5B-3DB0-4E76-BD68-3CF8A589D914}
 	EndGlobalSection
 EndGlobal

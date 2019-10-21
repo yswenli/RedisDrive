@@ -26,24 +26,7 @@ namespace Wenli.Drive.Redis
     public class RedisLocker : IDisposable
     {
         RedisHelper _redisHelper = null;
-
-        /// <summary>
-        /// 分布式锁
-        /// </summary>
-        /// <param name="sectionName"></param>
-        /// <param name="key"></param>
-        /// <param name="timeout"></param>
-        /// <param name="rolling"></param>
-        public RedisLocker(string sectionName, string key, int timeout = 30 * 1000, int rolling = 50)
-        {
-            _redisHelper = RedisHelperBuilder.Build(sectionName);
-
-            if (!_redisHelper.GetRedisOperation().Lock(key, timeout, rolling))
-            {
-                throw new Exception("RedisLocker申请锁已超时！");
-            }
-        }
-
+        
         /// <summary>
         /// 分布式锁
         /// </summary>

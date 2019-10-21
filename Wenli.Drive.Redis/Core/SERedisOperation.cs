@@ -92,15 +92,12 @@ namespace Wenli.Drive.Redis.Core
                     }
                     else
                     {
-                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, ex);
                         throw ex;
                     }
 
-                    Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, new Exception(retryCountMsg));
 
                     if (counter > _busyRetry)
                     {
-                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, new Exception("已超出配置的连接次数!"));
                         throw ex;  // 大于重试次数，将直接抛出去
                     }
 
@@ -146,15 +143,12 @@ namespace Wenli.Drive.Redis.Core
                     }
                     else
                     {
-                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, ex);
                         throw ex;
                     }
 
-                    Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, new Exception(retryCountMsg));
 
                     if (counter > _busyRetry)
                     {
-                        Log4NetHelper.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, new Exception("已超出配置的连接次数!"));
                         throw ex;  // 大于重试次数，将直接抛出去
                     }
 
