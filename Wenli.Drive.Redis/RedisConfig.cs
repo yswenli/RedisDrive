@@ -124,7 +124,7 @@ namespace Wenli.Drive.Redis
         public int BusyRetryWaitMS
         {
             get; set;
-        } = 10 * 1000;
+        } = 1000;
 
         /// <summary>
         ///     连接池大小

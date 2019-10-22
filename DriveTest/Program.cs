@@ -38,7 +38,8 @@ namespace DriveTest
                 Masters = "127.0.0.1:6379",
                 Slaves = "127.0.0.1:6380",
                 Password = "12321",
-                DefaultDatabase = 0
+                DefaultDatabase = 0,
+                BusyRetryWaitMS = 1000
             };
 
 
