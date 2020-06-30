@@ -34,7 +34,8 @@ namespace DriveTest
 
             var redisConfig = new RedisConfig()
             {
-                Type = RedisConfigType.Single,
+                SectionName = "Instance",
+                Type = RedisConnectType.Instance,
                 Masters = "127.0.0.1:6379",
                 Slaves = "127.0.0.1:6380",
                 Password = "12321",
@@ -45,7 +46,8 @@ namespace DriveTest
 
             var sentinelConfig = new RedisConfig()
             {
-                Type = RedisConfigType.Sentinel,
+                SectionName = "Sentinel",
+                Type = RedisConnectType.Sentinel,
                 Masters = "127.0.0.1:26379",
                 Password = "12321",
                 ServiceName = "mymaster"
@@ -53,8 +55,9 @@ namespace DriveTest
 
             var clusterConfig = new RedisConfig()
             {
-                Type = RedisConfigType.Cluster,
-                Masters = "127.0.0.1:16379,127.0.0.1:16380,127.0.0.1:16381",
+                SectionName= "Cluster",
+                Type = RedisConnectType.Cluster,
+                Masters = "127.0.0.1:6380",
                 Password = "12321"
             };
 
@@ -68,88 +71,88 @@ namespace DriveTest
                     #region sentinel
                     Console.WriteLine("Wenli.Drive.Redis test 进入哨兵模式---------------------");
 
-                    using (var redisHelper = RedisHelperBuilder.Build(clusterConfig))
+                    var redisHelper = RedisHelperBuilder.Build(clusterConfig);
+
+
+                    #region string
+                    Console.ReadLine();
+                    Console.WriteLine("string get/set test");
+
+                    redisHelper.GetRedisOperation().StringSet("abcabcabc", "123123");
+                    Console.WriteLine("写入key：abcabcabc，value：123123");
+
+                    var str = redisHelper.GetRedisOperation().StringGet("abcabcabc");
+                    Console.WriteLine("查询key：abcabcabc，value：" + str);
+
+                    redisHelper.GetRedisOperation().KeyDelete("abcabcabc");
+                    Console.WriteLine("移除key：abcabcabc");
+                    #endregion
+
+                    #region hashset
+                    Console.ReadLine();
+                    Console.WriteLine("hashset get/set test");
+                    var testModel = new DemoModel()
                     {
+                        ID = Guid.NewGuid().ToString("N"),
+                        Age = 18,
+                        Name = "Kitty",
+                        Created = DateTime.Now
+                    };
 
-                        #region string
-                        Console.ReadLine();
-                        Console.WriteLine("string get/set test");
+                    redisHelper.GetRedisOperation().HashSet<DemoModel>(testModel.Name, testModel.ID, testModel);
+                    Console.WriteLine(string.Format("写入hashid：{0}，key：{1}", testModel.Name, testModel.ID));
 
-                        redisHelper.GetRedisOperation().StringSet("abcabcabc", "123123");
-                        Console.WriteLine("写入key：abcabcabc，value：123123");
+                    testModel = redisHelper.GetRedisOperation().HashGet<DemoModel>(testModel.Name, testModel.ID);
+                    Console.WriteLine(string.Format("查询hashid：{0}，key：{1}", testModel.Name, testModel.ID));
 
-                        var str = redisHelper.GetRedisOperation().StringGet("abcabcabc");
-                        Console.WriteLine("查询key：abcabcabc，value：" + str);
+                    redisHelper.GetRedisOperation().HashDelete(testModel.Name, testModel.ID);
+                    Console.WriteLine("移除hash");
+                    #endregion
 
-                        redisHelper.GetRedisOperation().KeyDelete("abcabcabc");
-                        Console.WriteLine("移除key：abcabcabc");
-                        #endregion
+                    #region 队列
+                    Console.ReadLine();
+                    Console.WriteLine("list test");
 
-                        #region hashset
-                        Console.ReadLine();
-                        Console.WriteLine("hashset get/set test");
-                        var testModel = new DemoModel()
-                        {
-                            ID = Guid.NewGuid().ToString("N"),
-                            Age = 18,
-                            Name = "Kitty",
-                            Created = DateTime.Now
-                        };
+                    redisHelper.GetRedisOperation().Enqueue("list", "listvalue");
+                    Console.WriteLine("入队：list，value：listvalue");
 
-                        redisHelper.GetRedisOperation().HashSet<DemoModel>(testModel.Name, testModel.ID, testModel);
-                        Console.WriteLine(string.Format("写入hashid：{0}，key：{1}", testModel.Name, testModel.ID));
+                    Console.WriteLine("list.coumt：" + redisHelper.GetRedisOperation().QueueCount("list"));
 
-                        testModel = redisHelper.GetRedisOperation().HashGet<DemoModel>(testModel.Name, testModel.ID);
-                        Console.WriteLine(string.Format("查询hashid：{0}，key：{1}", testModel.Name, testModel.ID));
+                    Console.WriteLine(string.Format("出队：list,value：{0}", redisHelper.GetRedisOperation().Dnqueue("list")));
+                    Console.WriteLine("list.coumt：" + redisHelper.GetRedisOperation().QueueCount("list"));
+                    #endregion
 
-                        redisHelper.GetRedisOperation().HashDelete(testModel.Name, testModel.ID);
-                        Console.WriteLine("移除hash");
-                        #endregion
+                    #region sortedset
+                    Console.ReadLine();
+                    Console.WriteLine("sortedset test");
+                    Console.WriteLine(string.Format("sortedset add :{0}", redisHelper.GetRedisOperation().SortedSetAdd("sortedset", "sortedset", 0)));
+                    var list = redisHelper.GetRedisOperation().GetSortedSetRangeByRankWithSocres("sortedset", 0, 10000, 1, 9999, true);
+                    Console.WriteLine(string.Format("sortedset getlist :{0}", list));
+                    Console.WriteLine(string.Format("sortedset remove :{0}", redisHelper.GetRedisOperation().RemoveItemFromSortedSet("sortedset", "sortedset")));
+                    #endregion
 
-                        #region 队列
-                        Console.ReadLine();
-                        Console.WriteLine("list test");
+                    #region pub/sub
+                    Console.ReadLine();
+                    Console.WriteLine("sub/pub test");
 
-                        redisHelper.GetRedisOperation().Enqueue("list", "listvalue");
-                        Console.WriteLine("入队：list，value：listvalue");
+                    Console.WriteLine("订阅频道：happy");
 
-                        Console.WriteLine("list.coumt：" + redisHelper.GetRedisOperation().QueueCount("list"));
+                    redisHelper.GetRedisOperation().SubscribeWithChannel("happy", (x, y) =>
+                    {
+                        Console.WriteLine(string.Format("订阅者收到消息；频道：{0},消息：{1}", x, y));
+                    });
 
-                        Console.WriteLine(string.Format("出队：list,value：{0}", redisHelper.GetRedisOperation().Dnqueue("list")));
-                        Console.WriteLine("list.coumt：" + redisHelper.GetRedisOperation().QueueCount("list"));
-                        #endregion
-
-                        #region sortedset
-                        Console.ReadLine();
-                        Console.WriteLine("sortedset test");
-                        Console.WriteLine(string.Format("sortedset add :{0}", redisHelper.GetRedisOperation().SortedSetAdd("sortedset", "sortedset", 0)));
-                        var list = redisHelper.GetRedisOperation().GetSortedSetRangeByRankWithSocres("sortedset", 0, 10000, 1, 9999, true);
-                        Console.WriteLine(string.Format("sortedset getlist :{0}", list));
-                        Console.WriteLine(string.Format("sortedset remove :{0}", redisHelper.GetRedisOperation().RemoveItemFromSortedSet("sortedset", "sortedset")));
-                        #endregion
-
-                        #region pub/sub
-                        Console.ReadLine();
-                        Console.WriteLine("sub/pub test");
-
-                        Console.WriteLine("订阅频道：happy");
-
-                        redisHelper.GetRedisOperation().Subscribe("happy", (x, y) =>
-                        {
-                            Console.WriteLine(string.Format("订阅者收到消息；频道：{0},消息：{1}", x, y));
-                        });
-
-                        Console.WriteLine("发布频道happy 10 条测试消息");
-                        for (int i = 1; i <= 10; i++)
-                        {
-                            redisHelper.GetRedisOperation().Publish("happy", "this is a test message" + i);
-                            Thread.Sleep(400);
-                        }
-                        #endregion
-                        Console.ReadLine();
-                        redisHelper.GetRedisOperation().Unsubscribe("happy");
-
+                    Console.WriteLine("发布频道happy 10 条测试消息");
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        redisHelper.GetRedisOperation().Publish("happy", "this is a test message" + i);
+                        Thread.Sleep(400);
                     }
+                    #endregion
+                    Console.ReadLine();
+                    redisHelper.GetRedisOperation().Unsubscribe("happy");
+
+
                     #endregion
                 }
                 else if (c.ToUpper() == "C")
@@ -214,7 +217,7 @@ namespace DriveTest
 
                     Console.WriteLine("订阅频道：happy");
 
-                    redisHelper.GetRedisOperation().Subscribe("happy", (x, y) =>
+                    redisHelper.GetRedisOperation().SubscribeWithChannel("happy", (x, y) =>
                     {
                         Console.WriteLine(string.Format("订阅者收到消息；频道：{0},消息：{1}", x, y));
                     });
@@ -241,83 +244,83 @@ namespace DriveTest
 
                     var td1 = new Thread(new ThreadStart(() =>
                     {
-                        using (var redisHelper = RedisHelperBuilder.Build(sentinelConfig))
+                        var redisHelper = RedisHelperBuilder.Build(sentinelConfig);
+
+                        Parallel.For(0, 100000, countIndex =>
                         {
-                            Parallel.For(0, 100000, countIndex =>
+                            #region string
+                            Console.WriteLine("string get/set test");
+                            redisHelper.GetRedisOperation().StringSet(countIndex.ToString(), value);
+                            Console.WriteLine("写入key：abcabcabc，value：123123");
+
+                            var str = redisHelper.GetRedisOperation().StringGet(countIndex.ToString());
+                            Console.WriteLine("查询key：abcabcabc，value：" + str);
+
+                            redisHelper.GetRedisOperation().KeyDelete(countIndex.ToString());
+                            Console.WriteLine("移除key：abcabcabc");
+                            #endregion
+
+                            #region hashset
+                            Console.WriteLine("hashset get/set test");
+                            var testModel = new DemoModel()
                             {
-                                #region string
-                                Console.WriteLine("string get/set test");
-                                redisHelper.GetRedisOperation().StringSet(countIndex.ToString(), value);
-                                Console.WriteLine("写入key：abcabcabc，value：123123");
+                                ID = Guid.NewGuid().ToString("N"),
+                                Age = 18,
+                                Name = "Kitty",
+                                Created = DateTime.Now
+                            };
 
-                                var str = redisHelper.GetRedisOperation().StringGet(countIndex.ToString());
-                                Console.WriteLine("查询key：abcabcabc，value：" + str);
+                            redisHelper.GetRedisOperation().HashSet<DemoModel>(testModel.Name, testModel.ID, testModel);
+                            Console.WriteLine(string.Format("写入hashid：{0}，key：{1}", testModel.Name, testModel.ID));
 
-                                redisHelper.GetRedisOperation().KeyDelete(countIndex.ToString());
-                                Console.WriteLine("移除key：abcabcabc");
-                                #endregion
+                            testModel = redisHelper.GetRedisOperation().HashGet<DemoModel>(testModel.Name, testModel.ID);
+                            Console.WriteLine(string.Format("查询hashid：{0}，key：{1}", testModel.Name, testModel.ID));
 
-                                #region hashset
-                                Console.WriteLine("hashset get/set test");
-                                var testModel = new DemoModel()
-                                {
-                                    ID = Guid.NewGuid().ToString("N"),
-                                    Age = 18,
-                                    Name = "Kitty",
-                                    Created = DateTime.Now
-                                };
+                            redisHelper.GetRedisOperation().HashDelete(testModel.Name, testModel.ID);
+                            Console.WriteLine("移除hash");
+                            #endregion
 
-                                redisHelper.GetRedisOperation().HashSet<DemoModel>(testModel.Name, testModel.ID, testModel);
-                                Console.WriteLine(string.Format("写入hashid：{0}，key：{1}", testModel.Name, testModel.ID));
+                        });
 
-                                testModel = redisHelper.GetRedisOperation().HashGet<DemoModel>(testModel.Name, testModel.ID);
-                                Console.WriteLine(string.Format("查询hashid：{0}，key：{1}", testModel.Name, testModel.ID));
-
-                                redisHelper.GetRedisOperation().HashDelete(testModel.Name, testModel.ID);
-                                Console.WriteLine("移除hash");
-                                #endregion
-
-                            });
-                        }
                     }));
                     var td2 = new Thread(new ThreadStart(() =>
                     {
                         Parallel.For(0, 100000, countIndex =>
                         {
-                            using (var redisHelper = RedisHelperBuilder.Build(sentinelConfig))
+                            var redisHelper = RedisHelperBuilder.Build(sentinelConfig);
+
+                            #region string
+                            Console.WriteLine("string get/set test");
+                            redisHelper.GetRedisOperation().StringSet(countIndex.ToString(), value);
+                            Console.WriteLine("写入key：abcabcabc，value：123123");
+
+                            var str = redisHelper.GetRedisOperation().StringGet(countIndex.ToString());
+                            Console.WriteLine("查询key：abcabcabc，value：" + str);
+
+                            redisHelper.GetRedisOperation().KeyDelete(countIndex.ToString());
+                            Console.WriteLine("移除key：abcabcabc");
+                            #endregion
+
+                            #region hashset
+                            Console.WriteLine("hashset get/set test");
+                            var testModel = new DemoModel()
                             {
-                                #region string
-                                Console.WriteLine("string get/set test");
-                                redisHelper.GetRedisOperation().StringSet(countIndex.ToString(), value);
-                                Console.WriteLine("写入key：abcabcabc，value：123123");
+                                ID = Guid.NewGuid().ToString("N"),
+                                Age = 18,
+                                Name = "Kitty",
+                                Created = DateTime.Now
+                            };
 
-                                var str = redisHelper.GetRedisOperation().StringGet(countIndex.ToString());
-                                Console.WriteLine("查询key：abcabcabc，value：" + str);
+                            redisHelper.GetRedisOperation().HashSet<DemoModel>(testModel.Name, testModel.ID, testModel);
+                            Console.WriteLine(string.Format("写入hashid：{0}，key：{1}", testModel.Name, testModel.ID));
 
-                                redisHelper.GetRedisOperation().KeyDelete(countIndex.ToString());
-                                Console.WriteLine("移除key：abcabcabc");
-                                #endregion
+                            testModel = redisHelper.GetRedisOperation().HashGet<DemoModel>(testModel.Name, testModel.ID);
+                            Console.WriteLine(string.Format("查询hashid：{0}，key：{1}", testModel.Name, testModel.ID));
 
-                                #region hashset
-                                Console.WriteLine("hashset get/set test");
-                                var testModel = new DemoModel()
-                                {
-                                    ID = Guid.NewGuid().ToString("N"),
-                                    Age = 18,
-                                    Name = "Kitty",
-                                    Created = DateTime.Now
-                                };
+                            redisHelper.GetRedisOperation().HashDelete(testModel.Name, testModel.ID);
+                            Console.WriteLine("移除hash");
+                            #endregion
 
-                                redisHelper.GetRedisOperation().HashSet<DemoModel>(testModel.Name, testModel.ID, testModel);
-                                Console.WriteLine(string.Format("写入hashid：{0}，key：{1}", testModel.Name, testModel.ID));
-
-                                testModel = redisHelper.GetRedisOperation().HashGet<DemoModel>(testModel.Name, testModel.ID);
-                                Console.WriteLine(string.Format("查询hashid：{0}，key：{1}", testModel.Name, testModel.ID));
-
-                                redisHelper.GetRedisOperation().HashDelete(testModel.Name, testModel.ID);
-                                Console.WriteLine("移除hash");
-                                #endregion
-                            }
                         });
                     }));
 
@@ -463,7 +466,7 @@ namespace DriveTest
 
                     Console.WriteLine("订阅频道：happy");
 
-                    redisHelper.GetRedisOperation().Subscribe("happy", (x, y) =>
+                    redisHelper.GetRedisOperation().SubscribeWithChannel("happy", (x, y) =>
                     {
                         Console.WriteLine(string.Format("订阅者收到消息；频道：{0},消息：{1}", x, y));
                     });

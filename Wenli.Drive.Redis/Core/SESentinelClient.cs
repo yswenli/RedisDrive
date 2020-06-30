@@ -31,7 +31,7 @@ namespace Wenli.Drive.Redis.Core
         /// <param name="section"></param>
         /// <param name="newconnectionString"></param>
         /// <param name="poolSize"></param>
-        public delegate void OnRedisServerChangedHander(string section, string newconnectionString, int poolSize);
+        public delegate void OnRedisServerChangedHander(string section, string newconnectionString);
 
         private readonly string _Section = string.Empty;
 
@@ -92,11 +92,10 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         /// <param name="section"></param>
         /// <param name="newconnectionString"></param>
-        /// <param name="poolsize"></param>
-        protected void RaiseOnRedisServerChanged(string section, string newconnectionString, int poolsize)
+        protected void RaiseOnRedisServerChanged(string section, string newconnectionString)
         {
             if (OnRedisServerChanged != null)
-                OnRedisServerChanged(section, newconnectionString, poolsize);
+                OnRedisServerChanged(section, newconnectionString);
         }
 
         /// <summary>
@@ -203,6 +202,7 @@ namespace Wenli.Drive.Redis.Core
                     cloneConfig.Password = "";
                     finalSentinalConfig = cloneConfig;
                 }
+
                 SentinelConnection = ConnectionMultiplexer.Connect(finalSentinalConfig);
 
                 redisConnectionString = GetConnectionStringFromSentinel();
@@ -212,7 +212,7 @@ namespace Wenli.Drive.Redis.Core
                 _Sentinelsub.SubscribeAsync("+switch-master", (channle, msg) =>
                 {
                     redisConnectionString = GetConnectionStringFromSentinel();
-                    RaiseOnRedisServerChanged(_Section, redisConnectionString, PoolSize);
+                    RaiseOnRedisServerChanged(_Section, redisConnectionString);
                 });
             }
             catch (Exception ex)

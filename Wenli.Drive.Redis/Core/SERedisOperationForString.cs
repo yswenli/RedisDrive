@@ -3,14 +3,14 @@
 *CLR 版本：4.0.30319.42000
 *机器名称：WALLE-PC
 *命名空间：Wenli.Drive.Redis.Core
-*类 名 称：SERedisKeysOperation
+*类 名 称：SERedisOperationForString
 *版 本 号：V1.0.0.0
 *创建人： yswenli
 *电子邮箱：yswenli@outlook.com
-*创建时间：2019/10/12 14:26:42
+*创建时间：2020/6/3 15:45:03
 *描述：
 *=====================================================================
-*修改时间：2019/10/12 14:26:42
+*修改时间：2020/6/3 15:45:03
 *修 改 人： yswenli
 *版 本 号： V1.0.0.0
 *描    述：
@@ -18,17 +18,16 @@
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Wenli.Drive.Redis.Interface;
 using Wenli.Drive.Redis.Tool;
 
 namespace Wenli.Drive.Redis.Core
 {
     /// <summary>
-    /// SERedisKeysOperation
+    /// SERedisOperationForString
     /// </summary>
-    public partial class SERedisOperation
+    public partial class SERedisOperation : IRedisOperation
     {
 
         #region Keys
@@ -42,10 +41,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().KeyExists(key);
-                }
+                return _cnn.GetDatabase().KeyExists(key);
             });
         }
 
@@ -63,10 +59,7 @@ namespace Wenli.Drive.Redis.Core
             }
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().KeyExpire(key, datetime);
-                }
+                return _cnn.GetDatabase().KeyExpire(key, datetime);
             });
         }
 
@@ -81,10 +74,7 @@ namespace Wenli.Drive.Redis.Core
             return DoWithRetry(() =>
             {
                 if (timeout > 0)
-                    using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                    {
-                        return cnn.GetDatabase().KeyExpire(key, DateTime.Now.AddSeconds(timeout));
-                    }
+                    return _cnn.GetDatabase().KeyExpire(key, DateTime.Now.AddSeconds(timeout));
                 return false;
             });
         }
@@ -102,15 +92,9 @@ namespace Wenli.Drive.Redis.Core
             {
                 var bResult = false;
                 if (timeout > 0)
-                    using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                    {
-                        bResult = cnn.GetDatabase().StringSet(key, value, new TimeSpan(0, 0, timeout));
-                    }
+                    bResult = _cnn.GetDatabase().StringSet(key, value, new TimeSpan(0, 0, timeout));
                 else
-                    using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                    {
-                        bResult = cnn.GetDatabase().StringSet(key, value);
-                    }
+                    bResult = _cnn.GetDatabase().StringSet(key, value);
                 return bResult;
             });
         }
@@ -126,10 +110,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringSet(key, value, expire);
-                }
+                return _cnn.GetDatabase().StringSet(key, value, expire);
             });
         }
 
@@ -143,10 +124,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringSet(key, value, when: When.NotExists);
-                }
+                return _cnn.GetDatabase().StringSet(key, value, when: When.NotExists);
             });
         }
 
@@ -161,10 +139,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringSet(key, value, ts, when: When.NotExists);
-                }
+                return _cnn.GetDatabase().StringSet(key, value, ts, when: When.NotExists);
             });
         }
 
@@ -178,10 +153,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringGetSet(key, value);
-                }
+                return _cnn.GetDatabase().StringGetSet(key, value);
             });
         }
 
@@ -195,10 +167,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.Keys(patten);
-                }
+                return _cnn.Keys(patten);
             });
         }
 
@@ -214,10 +183,7 @@ namespace Wenli.Drive.Redis.Core
         {
             DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    cnn.Keys(callback, patten, size);
-                }
+                _cnn.Keys(callback, patten, size);
             });
         }
 
@@ -235,23 +201,21 @@ namespace Wenli.Drive.Redis.Core
             {
                 List<string> keys = new List<string>();
 
-                using (var cnn = new SERedisConnection(_sectionName, dbIndex == -1 ? _dbIndex : dbIndex))
-                {
-                    var result = cnn.GetDatabase().ScriptEvaluate(LuaScript.Prepare("return  redis.call('KEYS', '*')"), CommandFlags.PreferSlave);
+                var result = _cnn.GetDatabase().ScriptEvaluate(LuaScript.Prepare("return  redis.call('KEYS', '*')"), CommandFlags.PreferSlave);
 
-                    if (!result.IsNull)
+                if (!result.IsNull)
+                {
+                    var list = (RedisResult[])result;
+                    foreach (var item in list)
                     {
-                        var list = (RedisResult[])result;
-                        foreach (var item in list)
-                        {
-                            var key = (RedisKey)item;
-                            keys.Add(key.ToString());
-                        }
+                        var key = (RedisKey)item;
+                        keys.Add(key.ToString());
                     }
                 }
                 return keys;
             });
         }
+
         /// <summary>
         ///     获取key
         /// </summary>
@@ -261,10 +225,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringGet(key);
-                }
+                return _cnn.GetDatabase().StringGet(key);
             });
         }
 
@@ -280,10 +241,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return StringSet(key, SerializeHelper.Serialize(t), timeout);
-                }
+                return StringSet(key, SerializeHelper.Serialize(t), timeout);
             });
         }
 
@@ -314,27 +272,24 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                var batch = _cnn.GetDatabase().CreateBatch();
+
+                List<Task<RedisValue>> tasks = new List<Task<RedisValue>>();
+
+                foreach (var key in keys)
                 {
-                    var batch = cnn.GetDatabase().CreateBatch();
-
-                    List<Task<RedisValue>> tasks = new List<Task<RedisValue>>();
-
-                    foreach (var key in keys)
-                    {
-                        tasks.Add(batch.StringGetAsync(key));
-                    }
-                    batch.Execute();
-
-                    List<T> result = new List<T>();
-
-                    foreach (var task in tasks)
-                    {
-                        result.Add(SerializeHelper.Deserialize<T>(task.GetAwaiter().GetResult()));
-                    }
-
-                    return result;
+                    tasks.Add(batch.StringGetAsync(key));
                 }
+                batch.Execute();
+
+                List<T> result = new List<T>();
+
+                foreach (var task in tasks)
+                {
+                    result.Add(SerializeHelper.Deserialize<T>(task.Result));
+                }
+
+                return result;
             });
         }
 
@@ -404,10 +359,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().KeyDelete(key);
-                }
+                return _cnn.GetDatabase().KeyDelete(key);
             });
         }
 
@@ -446,10 +398,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().KeyRename(oldKey, newKey);
-                }
+                return _cnn.GetDatabase().KeyRename(oldKey, newKey);
             });
         }
 
@@ -463,10 +412,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringIncrement(key, value);
-                }
+                return _cnn.GetDatabase().StringIncrement(key, value);
             });
         }
 
@@ -480,10 +426,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringDecrement(key, value);
-                }
+                return _cnn.GetDatabase().StringDecrement(key, value);
             });
         }
 
@@ -497,10 +440,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().StringAppend(value, value, CommandFlags.None);
-                }
+                return _cnn.GetDatabase().StringAppend(value, value, CommandFlags.None);
             });
         }
 

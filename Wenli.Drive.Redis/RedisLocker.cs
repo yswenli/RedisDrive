@@ -54,7 +54,7 @@ namespace Wenli.Drive.Redis
         /// <param name="key"></param>
         /// <param name="timeout"></param>
         /// <param name="rolling"></param>
-        public RedisLocker(string serviceName, string ipPort, string passwords, int type, string key, int timeout = 30 * 1000, int rolling = 50)
+        public RedisLocker(string serviceName, string ipPort, string passwords, RedisConnectType type, string key, int timeout = 30 * 1000, int rolling = 50)
         {
             _redisHelper = RedisHelperBuilder.Build(serviceName, ipPort, passwords, type);
 

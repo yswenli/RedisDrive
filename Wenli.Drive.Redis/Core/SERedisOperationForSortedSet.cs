@@ -3,14 +3,14 @@
 *CLR 版本：4.0.30319.42000
 *机器名称：WALLE-PC
 *命名空间：Wenli.Drive.Redis.Core
-*类 名 称：SERedisZSetOperation
+*类 名 称：SERedisOperationForSortedSet
 *版 本 号：V1.0.0.0
 *创建人： yswenli
 *电子邮箱：yswenli@outlook.com
-*创建时间：2019/10/12 14:29:59
+*创建时间：2020/6/3 15:49:14
 *描述：
 *=====================================================================
-*修改时间：2019/10/12 14:29:59
+*修改时间：2020/6/3 15:49:14
 *修 改 人： yswenli
 *版 本 号： V1.0.0.0
 *描    述：
@@ -19,15 +19,16 @@ using StackExchange.Redis;
 using System.Collections.Generic;
 using System.Linq;
 using Wenli.Drive.Redis.Data;
+using Wenli.Drive.Redis.Extends;
+using Wenli.Drive.Redis.Interface;
 
 namespace Wenli.Drive.Redis.Core
 {
     /// <summary>
-    /// SERedisZSetOperation
+    /// SERedisOperationForSortedSet
     /// </summary>
-    public partial class SERedisOperation
+    public partial class SERedisOperation : IRedisOperation
     {
-
         #region Sorted Sets
 
         /// <summary>
@@ -59,10 +60,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetAdd(setId, item, score);
-                }
+                return _cnn.GetDatabase().SortedSetAdd(setId, item, score);
             });
         }
 
@@ -79,21 +77,10 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    var result = new List<string>();
-                    var list =
-                        cnn.GetDatabase()
-                            .SortedSetRangeByRank(setId, fromRank, toRank,
-                                order == Order.Descending.ToString().ToLower() ? Order.Descending : Order.Ascending)
-                            .ToList();
-                    if (list.Any())
-                        list.ForEach(x =>
-                        {
-                            result.Add(x.ToString());
-                        });
-                    return result;
-                }
+                return _cnn.GetDatabase()
+                         .SortedSetRangeByRank(setId, fromRank, toRank,
+                             order == Order.Descending.ToString().ToLower() ? Order.Descending : Order.Ascending)
+                         .ToList().ConvertTo();
             });
         }
 
@@ -110,21 +97,10 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    var result = new Dictionary<string, double>();
-                    var list =
-                        cnn.GetDatabase()
-                            .SortedSetRangeByRankWithScores(setId, fromRank, toRank,
-                                order == Order.Descending.ToString().ToLower() ? Order.Descending : Order.Ascending)
-                            .ToList();
-                    if (list.Any())
-                        list.ForEach(x =>
-                        {
-                            result.Add(x.Element, x.Score);
-                        });
-                    return result;
-                }
+                return _cnn.GetDatabase()
+                        .SortedSetRangeByRankWithScores(setId, fromRank, toRank,
+                            order == Order.Descending.ToString().ToLower() ? Order.Descending : Order.Ascending)
+                        .ToList().ConvertTo();
             });
         }
 
@@ -143,36 +119,33 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                var count = _cnn.GetDatabase().SortedSetLength(setid); //此处无法正确获取数量
+                if (count > 0)
                 {
-                    var count = cnn.GetDatabase().SortedSetLength(setid); //此处无法正确获取数量
-                    if (count > 0)
+                    var list = _cnn.GetDatabase()
+                        .SortedSetRangeByScoreWithScores(setid, min, max, Exclude.Stop,
+                            orderBy ? Order.Ascending : Order.Descending, (pageIndex - 1) * pageSize, pageSize);
+                    if ((list != null) && (list.Length > 0))
                     {
-                        var list = cnn.GetDatabase()
-                            .SortedSetRangeByScoreWithScores(setid, min, max, Exclude.Stop,
-                                orderBy ? Order.Ascending : Order.Descending, (pageIndex - 1) * pageSize, pageSize);
-                        if ((list != null) && (list.Length > 0))
+                        var result = new List<string>();
+                        list.ToList().ForEach(x =>
                         {
-                            var result = new List<string>();
-                            list.ToList().ForEach(x =>
+                            if ((x != null) && x.Element.HasValue)
                             {
-                                if ((x != null) && x.Element.HasValue)
-                                {
-                                    var value = x.Element.ToString();
-                                    result.Add(value);
-                                }
-                            });
-                            return new PagedList<string>
-                            {
-                                PageIndex = pageIndex,
-                                PageSize = pageSize,
-                                Count = count,
-                                List = result
-                            };
-                        }
+                                var value = x.Element.ToString();
+                                result.Add(value);
+                            }
+                        });
+                        return new PagedList<string>
+                        {
+                            PageIndex = pageIndex,
+                            PageSize = pageSize,
+                            Count = count,
+                            List = result
+                        };
                     }
-                    return new PagedList<string>();
                 }
+                return new PagedList<string>();
             });
         }
 
@@ -191,33 +164,30 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                var count = _cnn.GetDatabase().SortedSetLength(setid, minScore, maxScore);
+                if (count > 0)
                 {
-                    var count = cnn.GetDatabase().SortedSetLength(setid, minScore, maxScore);
-                    if (count > 0)
+                    var list = _cnn.GetDatabase().SortedSetRangeByScore(setid, minScore, maxScore, Exclude.Stop, orderBy ? Order.Ascending : Order.Descending, (pageIndex - 1) * pageSize, pageSize);
+
+                    if (list != null && list.Any())
                     {
-                        var list = cnn.GetDatabase().SortedSetRangeByScore(setid, minScore, maxScore, Exclude.Stop, orderBy ? Order.Ascending : Order.Descending, (pageIndex - 1) * pageSize, pageSize);
+                        var result = new List<string>();
 
-                        if (list != null && list.Any())
+                        foreach (var item in list)
                         {
-                            var result = new List<string>();
-
-                            foreach (var item in list)
-                            {
-                                result.Add(item.ToString());
-                            }
-
-                            return new PagedList<string>
-                            {
-                                PageIndex = pageIndex,
-                                PageSize = pageSize,
-                                Count = count,
-                                List = result
-                            };
+                            result.Add(item.ToString());
                         }
+
+                        return new PagedList<string>
+                        {
+                            PageIndex = pageIndex,
+                            PageSize = pageSize,
+                            Count = count,
+                            List = result
+                        };
                     }
-                    return new PagedList<string>();
                 }
+                return new PagedList<string>();
             });
         }
 
@@ -233,24 +203,26 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    Dictionary<string, double> list = null;
+                return _cnn.GetDatabase().SortedSetRangeByScoreWithScores(setid, minScore, maxScore, Exclude.Stop, orderBy ? Order.Ascending : Order.Descending).ConvertTo();
+            });
+        }
 
-                    var data = cnn.GetDatabase().SortedSetRangeByScoreWithScores(setid, minScore, maxScore, Exclude.Stop, orderBy ? Order.Ascending : Order.Descending);
-
-                    if (data != null && data.Any())
-                    {
-                        list = new Dictionary<string, double>();
-
-                        foreach (var item in data)
-                        {
-                            list.Add(item.Element.ToString(), item.Score);
-                        }
-                    }
-
-                    return list;
-                }
+        /// <summary>
+        /// 获取zset
+        /// </summary>
+        /// <param name="setid"></param>
+        /// <param name="minScore"></param>
+        /// <param name="maxScore"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
+        public PagedDictionary<string, double> GetSortedSetRangeBySocreWithScore(string setid, double minScore, double maxScore, int pageIndex, int pageSize, bool orderBy = true)
+        {
+            return DoWithRetry(() =>
+            {
+                var len = _cnn.GetDatabase().SortedSetLength(setid, minScore, maxScore, Exclude.Stop);
+                return _cnn.GetDatabase().SortedSetRangeByScoreWithScores(setid, minScore, maxScore, Exclude.Stop, orderBy ? Order.Ascending : Order.Descending, skip: (pageIndex - 1) * pageSize, take: pageSize).ConvertTo(pageIndex, pageSize, len);
             });
         }
 
@@ -266,25 +238,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    List<string> list = null;
-
-                    var data = cnn.GetDatabase().SortedSetRangeByScore(setid, minScore, maxScore, Exclude.None, orderBy ? Order.Ascending : Order.Descending);
-
-                    if (data != null && data.Any())
-                    {
-                        list = new List<string>();
-
-                        foreach (var item in data)
-                        {
-                            list.Add(item.ToString());
-                        }
-
-                    }
-
-                    return list;
-                }
+                return _cnn.GetDatabase().SortedSetRangeByScore(setid, minScore, maxScore, Exclude.Stop, orderBy ? Order.Ascending : Order.Descending).ConvertTo();
             });
         }
 
@@ -300,18 +254,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    var result = new List<string>();
-                    var list = cnn.GetDatabase().SortedSetRangeByValue(setId, minValue, maxValue).ToList();
-                    if (list.Any())
-                        list.ForEach(x =>
-                        {
-                            if (x.HasValue)
-                                result.Add(x.ToString());
-                        });
-                    return result;
-                }
+                return _cnn.GetDatabase().SortedSetRangeByValue(setId, minValue, maxValue, Exclude.Stop).ConvertTo();
             });
         }
 
@@ -324,10 +267,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetLength(setId);
-                }
+                return _cnn.GetDatabase().SortedSetLength(setId);
             });
         }
 
@@ -342,10 +282,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetLength(setId, minScore, maxScore);
-                }
+                return _cnn.GetDatabase().SortedSetLength(setId, minScore, maxScore, Exclude.Stop);
             });
         }
 
@@ -360,12 +297,9 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase()
+                return _cnn.GetDatabase()
                         .SortedSetRank(setId, item,
                             order == Order.Descending.ToString().ToLower() ? Order.Descending : Order.Ascending);
-                }
             });
         }
 
@@ -379,10 +313,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetScore(setId, item);
-                }
+                return _cnn.GetDatabase().SortedSetScore(setId, item);
             });
         }
 
@@ -397,10 +328,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetIncrement(setId, item, score);
-                }
+                return _cnn.GetDatabase().SortedSetIncrement(setId, item, score);
             });
         }
 
@@ -415,10 +343,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetDecrement(setId, item, score);
-                }
+                return _cnn.GetDatabase().SortedSetDecrement(setId, item, score);
             });
         }
 
@@ -432,10 +357,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetRemove(setId, item);
-                }
+                return _cnn.GetDatabase().SortedSetRemove(setId, item);
             });
         }
 
@@ -450,10 +372,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetRemoveRangeByRank(setId, fromRank, toRank);
-                }
+                return _cnn.GetDatabase().SortedSetRemoveRangeByRank(setId, fromRank, toRank);
             });
         }
 
@@ -468,14 +387,10 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SortedSetRemoveRangeByScore(setId, minValue, maxValue);
-                }
+                return _cnn.GetDatabase().SortedSetRemoveRangeByScore(setId, minValue, maxValue, Exclude.Stop);
             });
         }
 
         #endregion
-
     }
 }

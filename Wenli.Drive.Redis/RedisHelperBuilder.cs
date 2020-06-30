@@ -13,7 +13,7 @@
  * 创建说明：
  *****************************************************************************************************/
 using System;
-using System.Configuration;
+using System.Linq;
 using System.Reflection;
 using Wenli.Drive.Redis.Interface;
 
@@ -25,48 +25,36 @@ namespace Wenli.Drive.Redis
     public static class RedisHelperBuilder
     {
         private static readonly string _AssemName;
+
         private static readonly string _TObjectName;
-        private static readonly IRedisHelper _AssemObject;
+
+        private static readonly IRedisHelper _instance;
 
         /// <summary>
-        ///     RedisClient容器
+        /// RedisClient容器
         /// </summary>
         static RedisHelperBuilder()
         {
-            var appStr = "Wenli.Drive.Redis.Core.SERedisHelper;Wenli.Drive.Redis,Version=1.0.0.0,Culture=neutral,PublicKeyToken=null";
-            var appStrArr = appStr.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+            var redisClientConfig = "Wenli.Drive.Redis.Core.SERedisHelper;Wenli.Drive.Redis,Version=2.1.0.5,Culture=neutral,PublicKeyToken=null";
+            var appStrArr = redisClientConfig.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
             _TObjectName = appStrArr[0];
             _AssemName = appStrArr[1];
-            _AssemObject = Assembly.Load(_AssemName).CreateInstance(_TObjectName) as IRedisHelper;
+
+            _instance = Assembly.Load(_AssemName).CreateInstance(_TObjectName) as IRedisHelper;
         }
 
         /// <summary>
         ///     根据指定配置依赖注入产生一个新的实例
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="sectionName">redis配置实例名称RedisInfo</param>
         /// <returns></returns>
-        public static T Build<T>() where T : class, new()
+        public static RedisHelper Build(string sectionName)
         {
-            var t = new T();
-            var mf = t.GetType().GetMethod("CreateInstance");
-            mf.Invoke(t, new[] { _AssemObject });
-            return t;
-        }
-
-        /// <summary>
-        ///     根据指定配置依赖注入产生一个新的实例
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="section">redis配置实例名称RedisInfo</param>
-        /// <returns></returns>
-        public static T Build<T>(string section) where T : class, new()
-        {
-            var t = new T();
-            var CreateInstance = t.GetType().GetMethod("CreateInstance");
-            CreateInstance.Invoke(t, new[] { _AssemObject });
-            var Init = t.GetType().GetMethod("Init");
-            Init.Invoke(t, new[] { section });
-            return t;
+            var redisHelper = new RedisHelper();
+            redisHelper.CreateInstance(_instance);
+            redisHelper.Init(sectionName);
+            return redisHelper;
         }
 
         /// <summary>
@@ -77,25 +65,36 @@ namespace Wenli.Drive.Redis
         public static RedisHelper Build(RedisConfig config)
         {
             var redisHelper = new RedisHelper();
-            redisHelper.CreateInstance(_AssemObject);
+            redisHelper.CreateInstance(_instance);
             redisHelper.Init(config);
             return redisHelper;
         }
 
         /// <summary>
-        /// 自定义指定配置方式
+        /// 自定义指定配置连接
         /// </summary>
-        /// <param name="serviceName"></param>
+        /// <param name="name">这个并非是配置节点名，而是逻辑名</param>
         /// <param name="ipPort"></param>
         /// <param name="passwords"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static RedisHelper Build(string serviceName, string ipPort, string passwords, int type = 0)
+        public static RedisHelper Build(string name, string ipPort, string passwords, RedisConnectType type = 0)
         {
             var redisHelper = new RedisHelper();
-            redisHelper.CreateInstance(_AssemObject);
-            redisHelper.Init(serviceName, ipPort, passwords);
+            redisHelper.CreateInstance(_instance);
+            redisHelper.Init(name, ipPort, passwords, type);
             return redisHelper;
+        }
+
+        static void Check(params string[] args)
+        {
+            if (args == null || !args.Any()) throw new ArgumentNullException("RedisHelperBuilder.Build 必填参数不能空！");
+
+            foreach (var item in args)
+            {
+                if (string.IsNullOrEmpty(item))
+                    throw new ArgumentNullException("RedisHelperBuilder.Build 必填参数不能空！");
+            }
         }
     }
 }

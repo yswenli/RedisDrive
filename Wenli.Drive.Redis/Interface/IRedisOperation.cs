@@ -14,7 +14,6 @@
  *****************************************************************************************************/
 using System;
 using System.Collections.Generic;
-using StackExchange.Redis;
 using Wenli.Drive.Redis.Data;
 
 namespace Wenli.Drive.Redis.Interface
@@ -24,9 +23,21 @@ namespace Wenli.Drive.Redis.Interface
     /// </summary>
     public interface IRedisOperation
     {
-        string GetServerInfo();
+        /// <summary>
+        /// ping
+        /// </summary>
+        /// <returns></returns>
+        TimeSpan Ping();
 
         #region Keys
+        /// <summary>
+        /// 获取keys
+        /// </summary>
+        /// <param name="dbIndex"></param>
+        /// <param name="patten"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        List<string> Keys(int dbIndex = -1, string patten = "*", int count = 20);
 
         /// <summary>
         ///     是否存在key
@@ -47,7 +58,7 @@ namespace Wenli.Drive.Redis.Interface
         ///     设置key过期时间
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="timeout"></param>
+        /// <param name="timeout">过期时间（秒）</param>
         /// <returns></returns>
         bool KeyExpire(string key, int timeout = 0);
 
@@ -56,7 +67,7 @@ namespace Wenli.Drive.Redis.Interface
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <param name="timeout"></param>
+        /// <param name="timeout">过期时间（秒）</param>
         /// <returns></returns>
         bool StringSet(string key, string value, int timeout = 0);
 
@@ -131,7 +142,7 @@ namespace Wenli.Drive.Redis.Interface
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <param name="t"></param>
-        /// <param name="timeout"></param>
+        /// <param name="timeout">过期时间（秒）</param>
         /// <returns></returns>
         bool StringSet<T>(string key, T t, int timeout = 0) where T : class, new();
 
@@ -464,7 +475,6 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="setId"></param>
         /// <param name="item"></param>
         /// <param name="score"></param>
-        /// <param name="timeout"></param>
         /// <returns></returns>
         bool SortedSetAdd(string setId, string item, double score);
 
@@ -524,6 +534,18 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="orderBy"></param>
         /// <returns></returns>
         Dictionary<string, double> GetSortedSetRangeBySocreWithScore(string setid, double minScore, double maxScore, bool orderBy = true);
+
+        /// <summary>
+        /// 获取zset
+        /// </summary>
+        /// <param name="setid"></param>
+        /// <param name="minScore"></param>
+        /// <param name="maxScore"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
+        PagedDictionary<string, double> GetSortedSetRangeBySocreWithScore(string setid, double minScore, double maxScore, int pageIndex, int pageSize, bool orderBy = true);
 
         /// <summary>
         /// 获取zset
@@ -704,7 +726,14 @@ namespace Wenli.Drive.Redis.Interface
         /// </summary>
         /// <param name="channelPrefix"></param>
         /// <param name="action"></param>
-        void Subscribe(string channelPrefix, Action<string, string> action);
+        //void Subscribe(string channelPrefix, Action<RedisChannel, RedisValue> action);
+
+        /// <summary>
+        /// 订阅消息
+        /// </summary>
+        /// <param name="channelPrefix"></param>
+        /// <param name="action"></param>
+        void SubscribeWithChannel(string channelPrefix, Action<string, string> action);
 
         /// <summary>
         ///     取消订阅
@@ -726,7 +755,7 @@ namespace Wenli.Drive.Redis.Interface
         /// 分布式锁
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="timeout"></param>
+        /// <param name="timeout">过期时间（毫秒）</param>
         /// <param name="rolling"></param>
         /// <returns></returns>
         bool Lock(string key, int timeout = 30 * 1000, int rolling = 500);

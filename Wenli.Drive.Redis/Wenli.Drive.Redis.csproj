@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.0.0.2</Version>
+    <Version>2.1.0.5</Version>
     <Description>This is a.Net redis integrated driver to support a single instance, cluster, sentinel and other modes of data manipulation  这是一个.net 的redis集成驱动，支持单实例、云集群、哨兵等模式的数据操作</Description>
     <Copyright>Wenli.Drive.Redis @ yswenli</Copyright>
     <PackageTags>Wenli.Drive.Redis,Redis,RedisCluster,RedisSentinel</PackageTags>
@@ -19,8 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
 </Project>

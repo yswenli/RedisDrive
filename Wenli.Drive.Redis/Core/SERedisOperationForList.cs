@@ -3,29 +3,31 @@
 *CLR 版本：4.0.30319.42000
 *机器名称：WALLE-PC
 *命名空间：Wenli.Drive.Redis.Core
-*类 名 称：SERedisListOperation
+*类 名 称：SERedisOperationForList
 *版 本 号：V1.0.0.0
 *创建人： yswenli
 *电子邮箱：yswenli@outlook.com
-*创建时间：2019/10/12 15:27:27
+*创建时间：2020/6/3 15:50:38
 *描述：
 *=====================================================================
-*修改时间：2019/10/12 15:27:27
+*修改时间：2020/6/3 15:50:38
 *修 改 人： yswenli
 *版 本 号： V1.0.0.0
 *描    述：
 *****************************************************************************/
 using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Wenli.Drive.Redis.Interface;
 using Wenli.Drive.Redis.Tool;
 
 namespace Wenli.Drive.Redis.Core
 {
     /// <summary>
-    /// SERedisListOperation
+    /// SERedisOperationForList
     /// </summary>
-    public partial class SERedisOperation
+    public partial class SERedisOperation : IRedisOperation
     {
         #region Lists
 
@@ -38,10 +40,7 @@ namespace Wenli.Drive.Redis.Core
         {
             DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    cnn.GetDatabase().ListLeftPush(listId, value);
-                }
+                _cnn.GetDatabase().ListLeftPush(listId, value);
             });
         }
 
@@ -59,10 +58,7 @@ namespace Wenli.Drive.Redis.Core
 
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().ListLeftPush(listId, values.Select(r => (RedisValue)r).ToArray());
-                }
+                return _cnn.GetDatabase().ListLeftPush(listId, values.Select(r => (RedisValue)r).ToArray());
             });
         }
 
@@ -75,29 +71,21 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                string result;
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+                string result = _cnn.GetDatabase().ListRightPop(listId);
+
+                if (!string.IsNullOrEmpty(result))
                 {
-                    result = cnn.GetDatabase().ListRightPop(listId);
-
-                    if (!string.IsNullOrEmpty(result))
-                    {
-                        return result;
-                    }
-
-                    // 在多写队列中， 比如F5后面挂了多个redis。
-                    for (int i = 0; i < cnn.Pool.PoolSize - 1; i++)
-                    {
-                        result = cnn.GetDatabaseFromNextConnection().ListRightPop(listId);
-
-                        if (!string.IsNullOrEmpty(result))
-                        {
-                            return result;
-                        }
-                    }
-
-                    return null;
+                    return result;
                 }
+
+                result = _cnn.GetDatabase().ListRightPop(listId);
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    return result;
+                }
+
+                return null;
             });
         }
 
@@ -112,10 +100,7 @@ namespace Wenli.Drive.Redis.Core
             DoWithRetry(() =>
             {
                 var value = SerializeHelper.Serialize(t);
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    cnn.GetDatabase().ListLeftPush(listId, value);
-                }
+                _cnn.GetDatabase().ListLeftPush(listId, value);
             });
         }
 
@@ -129,13 +114,10 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    var json = cnn.GetDatabase().ListRightPop(listId);
-                    if (json.IsNullOrEmpty)
-                        return default(T);
-                    return SerializeHelper.Deserialize<T>(json.ToString());
-                }
+                var json = _cnn.GetDatabase().ListRightPop(listId);
+                if (json.IsNullOrEmpty)
+                    return default(T);
+                return SerializeHelper.Deserialize<T>(json.ToString());
             });
         }
 
@@ -151,21 +133,18 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    var result = new List<T>();
-                    var list = cnn.GetDatabase().ListRange(listId, start, stop).ToList();
-                    if (list.Count > 0)
-                        list.ForEach(x =>
+                var result = new List<T>();
+                var list = _cnn.GetDatabase().ListRange(listId, start, stop).ToList();
+                if (list.Count > 0)
+                    list.ForEach(x =>
+                    {
+                        if (x.HasValue)
                         {
-                            if (x.HasValue)
-                            {
-                                var value = SerializeHelper.Deserialize<T>(x);
-                                result.Add(value);
-                            }
-                        });
-                    return result;
-                }
+                            var value = SerializeHelper.Deserialize<T>(x);
+                            result.Add(value);
+                        }
+                    });
+                return result;
             });
         }
 
@@ -178,10 +157,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().ListLength(listId);
-                }
+                return _cnn.GetDatabase().ListLength(listId);
             });
         }
         /// <summary>
@@ -193,10 +169,7 @@ namespace Wenli.Drive.Redis.Core
         {
             DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    cnn.GetDatabase().ListRightPush(listId, value);
-                }
+                _cnn.GetDatabase().ListRightPush(listId, value);
             });
         }
         /// <summary>
@@ -210,10 +183,7 @@ namespace Wenli.Drive.Redis.Core
             DoWithRetry(() =>
             {
                 var value = SerializeHelper.Serialize(t);
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    cnn.GetDatabase().ListRightPush(listId, value);
-                }
+                _cnn.GetDatabase().ListRightPush(listId, value);
             });
         }
 

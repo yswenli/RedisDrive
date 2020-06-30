@@ -39,7 +39,7 @@ namespace Wenli.Drive.Redis.Core
         private IRedisOperation _RedisOperation;
 
         //实例名称
-        private string _InstanceName;
+        private string _sectionName;
 
         private static object locker = new object();
 
@@ -53,6 +53,17 @@ namespace Wenli.Drive.Redis.Core
         }
 
         /// <summary>
+        ///     初始化池，类似于构造方法
+        ///     不要重复调用
+        /// </summary>
+        /// <param name="section"></param>
+        /// <returns></returns>
+        public void Init(string section)
+        {
+            Init(RedisConfig.GetConfig(section));
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         /// <param name="sectionName"></param>
@@ -63,11 +74,11 @@ namespace Wenli.Drive.Redis.Core
         /// <param name="poolSize"></param>
         /// <param name="busyRetry"></param>
         /// <param name="busyRetryWaitMS"></param>
-        public void Init(string sectionName, RedisConfigType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
+        public void Init(string sectionName, RedisConnectType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
         {
             var redisConfig = new RedisConfig()
             {
-                InstanceName = sectionName,
+                SectionName = sectionName,
                 Type = type,
                 Masters = master,
                 PoolSize = poolSize,
@@ -87,11 +98,14 @@ namespace Wenli.Drive.Redis.Core
 
 
         /// <summary>
-        ///     redis操作
+        ///  redis操作
         /// </summary>
-        public IRedisOperation GetRedisOperation(int dbIndex = -1)
+        /// <param name="dbIndex"></param>
+        /// <param name="waitForFix"></param>
+        /// <returns></returns>
+        public IRedisOperation GetRedisOperation(int dbIndex = -1, bool waitForFix = true)
         {
-            return new SERedisOperation(_InstanceName, dbIndex, _BusyRetry, _BusyRetryWaitMS);
+            return new SERedisOperation(_sectionName, dbIndex, waitForFix, _BusyRetry, _BusyRetryWaitMS);
         }
 
         /// <summary>
@@ -103,13 +117,15 @@ namespace Wenli.Drive.Redis.Core
         {
             if (redisConfig == null)
                 throw new Exception("传入的redisConfig实例不能空");
-            _InstanceName = redisConfig.InstanceName;
+            _sectionName = redisConfig.SectionName;
             _BusyRetry = redisConfig.BusyRetry;
             _BusyRetryWaitMS = redisConfig.BusyRetryWaitMS;
+            if (string.IsNullOrWhiteSpace(_sectionName))
+                throw new Exception("redisConfig.SectionName不能为空");
 
             lock (locker)
             {
-                if (SERedisConnectionPoolManager.Exists(_InstanceName))
+                if (SERedisConnectionCache.Exists(_sectionName))
                     return;
 
                 var configStr = GenerateConnectionString(redisConfig);
@@ -118,21 +134,21 @@ namespace Wenli.Drive.Redis.Core
                     redisConfig.PoolSize = 1;
 
                 //哨兵特殊处理
-                if (redisConfig.Type == RedisConfigType.Sentinel)
+                if (redisConfig.Type == RedisConnectType.Sentinel)
                 {
-                    var sentinel = new SESentinelClient(_InstanceName, configStr, redisConfig.PoolSize, redisConfig.Password);
+                    var sentinel = new SESentinelClient(_sectionName, configStr, redisConfig.PoolSize, redisConfig.Password);
 
                     sentinel.OnRedisServerChanged += sentinel_OnRedisServerChanged;
 
                     var operateRedisConnecitonString = sentinel.Start();
 
-                    _SentinelPool.AddOrUpdate(_InstanceName + "_" + redisConfig.ServiceName, sentinel, (x, y) => sentinel);
+                    _SentinelPool.AddOrUpdate(_sectionName + "_" + redisConfig.ServiceName, sentinel, (x, y) => sentinel);
 
-                    SERedisConnectionPoolManager.Create(_InstanceName, operateRedisConnecitonString, redisConfig.PoolSize);
+                    SERedisConnectionCache.Init(_sectionName, operateRedisConnecitonString);
                 }
                 else
                 {
-                    SERedisConnectionPoolManager.Create(_InstanceName, configStr, redisConfig.PoolSize);
+                    SERedisConnectionCache.Init(_sectionName, configStr);
                 }
             }
         }
@@ -146,9 +162,9 @@ namespace Wenli.Drive.Redis.Core
         {
             var configStr = string.Empty;
 
-            switch (redisConfig.Type)
+            switch ((RedisConnectType)redisConfig.Type)
             {
-                case RedisConfigType.Single:
+                case RedisConnectType.Instance:
                     if (!string.IsNullOrWhiteSpace(redisConfig.Slaves))
                         configStr = string.Format("{0},{1},defaultDatabase={2}", redisConfig.Masters, redisConfig.Slaves, redisConfig.DefaultDatabase);
                     else
@@ -156,11 +172,11 @@ namespace Wenli.Drive.Redis.Core
                     if (!string.IsNullOrWhiteSpace(redisConfig.Password))
                         configStr += ",password=" + redisConfig.Password;
                     break;
-                case RedisConfigType.Sentinel:
+                case RedisConnectType.Sentinel:
                     //哨兵
                     configStr = string.Format("{0},defaultDatabase={1},serviceName={2}", redisConfig.Masters, redisConfig.DefaultDatabase, redisConfig.ServiceName);
                     break;
-                case RedisConfigType.Cluster:
+                case RedisConnectType.Cluster:
                     //集群
                     configStr = string.Format("{0}", redisConfig.Masters);
                     if (!string.IsNullOrWhiteSpace(redisConfig.Password))
@@ -177,7 +193,7 @@ namespace Wenli.Drive.Redis.Core
                     break;
             }
             configStr +=
-                string.Format(",allowAdmin={0},connectRetry={1},connectTimeout={2},keepAlive={3},syncTimeout={4},abortConnect=false", redisConfig.AllowAdmin, redisConfig.ConnectRetry, redisConfig.ConnectTimeout, redisConfig.KeepAlive, redisConfig.CommandTimeout);
+                string.Format(",allowAdmin={0},connectRetry={1},connectTimeout={2},keepAlive={3},syncTimeout={4},responseTimeout={4},abortConnect=false", redisConfig.AllowAdmin, redisConfig.ConnectRetry, redisConfig.ConnectTimeout, redisConfig.KeepAlive, redisConfig.CommandTimeout);
 
             if (!string.IsNullOrWhiteSpace(redisConfig.Extention))
             {
@@ -193,10 +209,9 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         /// <param name="section"></param>
         /// <param name="newConnectionString"></param>
-        /// <param name="poolSize"></param>
-        private void sentinel_OnRedisServerChanged(string section, string newConnectionString, int poolSize)
+        private void sentinel_OnRedisServerChanged(string section, string newConnectionString)
         {
-            SERedisConnectionPoolManager.Update(_InstanceName, newConnectionString, poolSize);
+            SERedisConnectionCache.Init(_sectionName, newConnectionString);
         }
     }
 }

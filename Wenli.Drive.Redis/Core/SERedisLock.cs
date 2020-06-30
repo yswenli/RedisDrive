@@ -6,7 +6,6 @@ namespace Wenli.Drive.Redis.Core
 {
     public partial class SERedisOperation : IRedisOperation
     {
-
         private static readonly string _prex = "lock_";
 
         int _timeout = 30 * 1000;
@@ -18,15 +17,14 @@ namespace Wenli.Drive.Redis.Core
             return _prex + key;
         }
 
-
         /// <summary>
         /// 利用StringSetIfNotExists实现锁
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="timeout"></param>
+        /// <param name="timeout">过期时间（毫秒）</param>
         /// <param name="rolling"></param>
         /// <returns></returns>
-        public bool Lock(string key, int timeout = 30 * 1000, int rolling = 500)
+        public bool Lock(string key, int timeout = 30 * 1000, int rolling = 50)
         {
             _key = key;
 
@@ -47,7 +45,6 @@ namespace Wenli.Drive.Redis.Core
             }
             return false;
         }
-
 
         /// <summary>
         /// 移除lock

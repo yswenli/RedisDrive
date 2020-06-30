@@ -18,21 +18,29 @@ using System;
 using System.Collections.Generic;
 using StackExchange.Redis;
 using System.Linq;
+using Wenli.Drive.Redis.Extends;
+using System.Threading;
 
 namespace Wenli.Drive.Redis.Core
 {
     /// <summary>
     ///     redis 连接
     /// </summary>
-    public class SERedisConnection : IDisposable
+    public class SERedisConnection
     {
         private ConnectionMultiplexer _cnn;
 
         private readonly int _dbIndex;
+
         private readonly string _sectionName;
 
         /// <summary>
-        ///     redis 连接
+        /// 连接字符串
+        /// </summary>
+        public string Configuration { get; set; }
+
+        /// <summary>
+        /// redis 连接
         /// </summary>
         /// <param name="sectionName"></param>
         /// <param name="dbIndex"></param>
@@ -40,16 +48,9 @@ namespace Wenli.Drive.Redis.Core
         {
             _sectionName = sectionName;
             _dbIndex = dbIndex;
-            Pool = SERedisConnectionPoolManager.GetPool(_sectionName);
-            _cnn = Pool.GetConnection();
-        }
-
-        /// <summary>
-        ///     释放连接
-        /// </summary>
-        public void Dispose()
-        {
-            _cnn = null;
+            _cnn = SERedisConnectionCache.Get(_sectionName);
+            if (_cnn == null) throw new Exception("redis 连接已断开,无法执行此操作，sectionName：" + sectionName);
+            Configuration = _cnn.Configuration;
         }
 
         /// <summary>
@@ -58,18 +59,7 @@ namespace Wenli.Drive.Redis.Core
         /// <returns></returns>
         public IDatabase GetDatabase()
         {
-
-
             return _cnn.GetDatabase(_dbIndex);
-        }
-
-        /// <summary>
-        ///    从连接池中取出下一个连接并获得他的database 
-        /// </summary>
-        /// <returns></returns>
-        public IDatabase GetDatabaseFromNextConnection()
-        {
-            return Pool.GetConnection().GetDatabase(_dbIndex);
         }
 
         /// <summary>
@@ -82,12 +72,13 @@ namespace Wenli.Drive.Redis.Core
         }
 
         /// <summary>
-        ///    获取当前section的poolSize
+        /// 尝试修复连接
         /// </summary>
-        /// <returns></returns>
-        internal SERedisConnectPool Pool
+        internal void TryFixConnection()
         {
-            get; private set;
+            Thread.Sleep(5 * 1000);
+
+            _cnn = new SERedisConnectionDefender(_sectionName, Configuration).FreeAndConnect(_cnn);
         }
 
         /// <summary>
@@ -98,7 +89,36 @@ namespace Wenli.Drive.Redis.Core
         [Obsolete("此方法只用于兼容老数据,且本方法只能查询db0，建议使用sortedset来保存keys")]
         public List<string> Keys(string patten = "*")
         {
-            return _cnn.GetServer(_cnn.GetEndPoints()[0]).Keys(pattern: "*").Select(b => b.ToString()).ToList();
+            var firstConfigEndPoint = _cnn.GetEndPoints()[0];
+            var anyServer = _cnn.GetServer(firstConfigEndPoint);
+
+            var lastResult = new List<string>();
+            if (anyServer.ServerType == ServerType.Cluster)
+            {
+                // 这个操作比较费时， 使用从来处理
+                var allMasterNodes = anyServer.ClusterConfiguration.Nodes.Where(n => !n.IsSlave);
+
+                foreach (var masterNode in allMasterNodes)
+                {
+                    var runCommandServer = masterNode;
+                    //LogCom.WriteInfoLog($"master node ：NodeId [{masterNode.NodeId}] : EndPoint [{masterNode.EndPoint.ToString()}] : ChildrenCount[{masterNode.Children.Count}]");
+                    if (masterNode.Children.Count > 0)
+                    {
+                        runCommandServer = masterNode.Children.First();
+                    }
+
+                    //LogCom.WriteInfoLog($"run keys command on Server ：NodeId [{runCommandServer.NodeId}] : EndPoint[{runCommandServer.EndPoint.ToString()}]");
+
+                    var resultsInOneServer = _cnn.GetServer(runCommandServer.EndPoint).Keys(pattern: patten).Select(b => b.ToString()).ToList();
+                    lastResult.AddRange(resultsInOneServer);
+                }
+
+                return lastResult;
+            }
+            else
+            {
+                return anyServer.Keys(pattern: patten).Select(b => b.ToString()).ToList();
+            }
         }
 
         /// <summary>
@@ -122,6 +142,7 @@ namespace Wenli.Drive.Redis.Core
                 foreach (var masterNode in allMasterNodes)
                 {
                     var runCommandServer = masterNode;
+                    //LogCom.WriteInfoLog($"master node ：NodeId [{masterNode.NodeId}] : EndPoint [{masterNode.EndPoint.ToString()}] : ChildrenCount[{masterNode.Children.Count}]");
 
                     // 驱动自带的 preferslave 不管用，还是运行在了master上，所以自己手动获取slave
                     var allAliveSlaves = masterNode.Children.Where(r => r.IsConnected).ToList();
@@ -129,6 +150,7 @@ namespace Wenli.Drive.Redis.Core
                     {
                         runCommandServer = allAliveSlaves.First();
                     }
+                    //LogCom.WriteInfoLog($"run keys command on Server ：NodeId [{runCommandServer.NodeId}] : EndPoint[{runCommandServer.EndPoint.ToString()}]");
 
                     var resultsInOneServer = _cnn.GetServer(runCommandServer.EndPoint).Keys(pattern: patten, pageSize: size).Select(b => b.ToString()).ToList();
                     callback(resultsInOneServer);
@@ -137,30 +159,36 @@ namespace Wenli.Drive.Redis.Core
             else
             {
                 callback(anyServer.Keys(pattern: patten, pageSize: size).Select(b => b.ToString()).ToList());
+                //yield return anyServer.Keys(pattern: patten).Select(b => b.ToString()).ToList();
             }
         }
 
         /// <summary>
-        /// 获取服务器信息
+        /// 获取指定keys
         /// </summary>
+        /// <param name="dbIndex"></param>
+        /// <param name="patten"></param>
+        /// <param name="count"></param>
         /// <returns></returns>
-        public string GetServerInfo()
+        [Obsolete("此方法只用于兼容老数据,且本方法只能查询db0，建议使用sortedset来保存keys")]
+        public List<string> Keys(int dbIndex = -1, string patten = "*", int count = 20)
         {
-            var info = string.Empty;
-            try
+            var result = new List<string>();
+
+            var endpoint = _cnn.GetEndPoints()[0];
+
+            var rs = _cnn.GetServer(endpoint);
+
+            var data = rs.Keys(dbIndex, patten, count, CommandFlags.PreferSlave);
+
+            if (data != null && data.Any())
             {
-                var eps = _cnn.GetEndPoints(true);
-                if (eps != null && eps.Length > 0)
-                {
-                    foreach (var ep in _cnn.GetEndPoints(true))
-                    {
-                        info += string.Format("{0}{1}{2}{1}", ep.AddressFamily.ToString(), Environment.NewLine, _cnn.GetServer(ep).InfoRaw());
-                    }
-                }
+                result.AddRange(data.ToList().ConvertTo());
             }
-            catch { }
-            return info;
+
+            return result = result.Take(count).ToList();
         }
+
 
     }
 }

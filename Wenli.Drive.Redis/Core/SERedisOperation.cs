@@ -12,15 +12,11 @@
  * 创建人：wenli
  * 创建说明：
  *****************************************************************************************************/
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using StackExchange.Redis;
-using Wenli.Drive.Redis.Data;
 using Wenli.Drive.Redis.Interface;
-using Wenli.Drive.Redis.Tool;
 
 namespace Wenli.Drive.Redis.Core
 {
@@ -34,7 +30,7 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         private const string DefaultOrder = "descending";
 
-        private readonly int _busyRetry = 5;
+        private readonly int _busyRetry = 1000;
 
         private readonly int _busyRetryWaitMS = 200;
 
@@ -42,23 +38,31 @@ namespace Wenli.Drive.Redis.Core
 
         private readonly string _sectionName;
 
+        SERedisConnection _cnn = null;
+
+        private readonly bool _waitForFix;
+
         /// <summary>
-        ///     SERedis操作类
+        /// SERedis操作类
         /// </summary>
         /// <param name="sectionName"></param>
         /// <param name="dbIndex"></param>
+        /// <param name="waitForFix"></param>
         /// <param name="busyRetry"></param>
         /// <param name="busyRetryWaitMS"></param>
-        public SERedisOperation(string sectionName, int dbIndex = -1, int busyRetry = 5, int busyRetryWaitMS = 200)
+        public SERedisOperation(string sectionName, int dbIndex = -1, bool waitForFix = true, int busyRetry = 1000, int busyRetryWaitMS = 200)
         {
             _sectionName = sectionName;
             _dbIndex = dbIndex;
+            _waitForFix = waitForFix;
             _busyRetry = busyRetry;
             _busyRetryWaitMS = busyRetryWaitMS;
-            if ((_busyRetry < 0) || (_busyRetry > 10000))
-                throw new Exception("重试次数有误，请输入0-10000之间整数");
-            if ((_busyRetryWaitMS < 100) || (_busyRetryWaitMS > 3000))
-                throw new Exception("失败重试等待时长有误，请输入100-3000之间整数");
+            if (_busyRetry < 0)
+                _busyRetry = 3;
+            if (_busyRetryWaitMS < 100)
+                _busyRetryWaitMS = 100;
+
+            _cnn = new SERedisConnection(_sectionName, _dbIndex);
         }
 
         #region 操作方法重试包装
@@ -74,6 +78,11 @@ namespace Wenli.Drive.Redis.Core
                 }
                 catch (Exception ex)
                 {
+                    if (!_waitForFix)
+                    {
+                        throw ex;
+                    }
+
                     counter++;
 
                     string retryCountMsg = string.Empty;
@@ -85,19 +94,26 @@ namespace Wenli.Drive.Redis.Core
                     else if (ex is RedisConnectionException)
                     {
                         retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+
+                        _cnn.TryFixConnection();
+
                     }
                     else if (ex is RedisServerException && ex.Message.Contains("MOVED"))
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                        retryCountMsg = string.Format("RedisServerException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+
+                        _cnn.TryFixConnection();
                     }
                     else
                     {
-                        throw ex;
+                        retryCountMsg = string.Format("Exception Redis<T> {0}操作异常，等待随后重试。当前已经重试：{1};ex:{2}", func.Method.Name, counter, ex.InnerException != null ? ex.InnerException.Message : ex.Message);
                     }
 
+                    //LogCom.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, new Exception(retryCountMsg));
 
                     if (counter > _busyRetry)
                     {
+                        //LogCom.WriteErrLog("SERedisOperation.DoWithRetry." + func.Method.Name, new Exception("已超出配置的连接次数!"));
                         throw ex;  // 大于重试次数，将直接抛出去
                     }
 
@@ -124,6 +140,10 @@ namespace Wenli.Drive.Redis.Core
                 }
                 catch (Exception ex)
                 {
+                    if (!_waitForFix)
+                    {
+                        throw ex;
+                    }
 
                     counter++;
 
@@ -136,19 +156,25 @@ namespace Wenli.Drive.Redis.Core
                     else if (ex is RedisConnectionException)
                     {
                         retryCountMsg = string.Format("RedisConnectionException Redis<T> {0}连接异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.InnerException.Message);
+
+                        _cnn.TryFixConnection();
                     }
                     else if (ex is RedisServerException && ex.Message.Contains("MOVED"))
                     {
-                        retryCountMsg = string.Format("RedisConnectionException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.Message);
+                        retryCountMsg = string.Format("RedisServerException Redis<T> {0} MOVED 异常，等待随后重试。当前已重试：{1};ex:{2}", action.Method.Name, counter, ex.Message);
+
+                        _cnn.TryFixConnection();
                     }
                     else
                     {
-                        throw ex;
+                        retryCountMsg = string.Format("Exception Redis<T> {0}操作异常，等待随后重试。当前已经重试：{1};ex:{2}", action.Method.Name, counter, ex.Message);
                     }
 
+                    //LogCom.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, new Exception(retryCountMsg));
 
                     if (counter > _busyRetry)
                     {
+                        //LogCom.WriteErrLog("SERedisOperation.DoWithRetry." + action.Method.Name, new Exception("已超出配置的连接次数!"));
                         throw ex;  // 大于重试次数，将直接抛出去
                     }
 
@@ -164,15 +190,31 @@ namespace Wenli.Drive.Redis.Core
         #endregion
 
         /// <summary>
-        /// 获取服务器信息
+        /// Ping
         /// </summary>
         /// <returns></returns>
-        public string GetServerInfo()
+        public TimeSpan Ping()
         {
-            using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
+            return DoWithRetry(() =>
             {
-                return cnn.GetServerInfo();
-            }
+                return _cnn.GetDatabase().Ping();
+            });
         }
+
+        /// <summary>
+        /// 获取keys
+        /// </summary>
+        /// <param name="dbIndex"></param>
+        /// <param name="patten"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public List<string> Keys(int dbIndex = -1, string patten = "*", int count = 20)
+        {
+            return DoWithRetry(() =>
+            {
+                return _cnn.Keys(dbIndex, patten, count);
+            });
+        }
+
     }
 }

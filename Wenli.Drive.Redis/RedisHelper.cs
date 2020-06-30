@@ -22,25 +22,45 @@ namespace Wenli.Drive.Redis
     ///     redis容器类
     ///     此类不要直接new(),需要用RedisHelperBuilder来构造
     /// </summary>
-    public class RedisHelper : IDisposable
+    public class RedisHelper
     {
         private IRedisHelper _redisHelper;
 
+        /// <summary>
+        /// redis容器类
+        /// </summary>
+        internal RedisHelper() { }
 
-        private IRedisOperation _RedisOperation;
-
-        public void Dispose()
+        /// <summary>
+        /// ioc所需初始化方法
+        /// </summary>
+        /// <param name="redisHelper"></param>
+        internal void CreateInstance(IRedisHelper redisHelper)
         {
-            _RedisOperation = null;
+            _redisHelper = redisHelper.DeepCloneForDynamic();
         }
 
         /// <summary>
-        ///     ioc所需初始化方法
+        ///     初始化
+        ///     使用RedisHelperBuilder.Build请不要调用此方法
         /// </summary>
-        /// <param name="redisHelper"></param>
-        public void CreateInstance(IRedisHelper redisHelper)
+        /// <param name="sectionName"></param>
+        /// <returns></returns>
+        internal void Init(string sectionName)
         {
-            _redisHelper = SerializeHelper.ByteDeserialize<IRedisHelper>(SerializeHelper.ByteSerialize(redisHelper));
+            _redisHelper.Init(sectionName);
+        }
+
+        /// <summary>
+        /// 自定义初始化
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="ipPort"></param>
+        /// <param name="passwords"></param>
+        /// <param name="type"></param>
+        internal void Init(string name, string ipPort, string passwords, RedisConnectType type = RedisConnectType.Instance)
+        {
+            _redisHelper.Init(name, type, ipPort, passwords);
         }
 
         /// <summary>
@@ -54,7 +74,7 @@ namespace Wenli.Drive.Redis
         /// <param name="poolSize"></param>
         /// <param name="busyRetry"></param>
         /// <param name="busyRetryWaitMS"></param>
-        internal void Init(string sectionName, RedisConfigType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
+        internal void Init(string sectionName, RedisConnectType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
         {
             _redisHelper.Init(sectionName, type, master, password, serviceName, poolSize, busyRetry, busyRetryWaitMS);
         }
@@ -70,23 +90,14 @@ namespace Wenli.Drive.Redis
         }
 
         /// <summary>
-        ///     redis操作
+        /// redis操作
         /// </summary>
-        public IRedisOperation GetRedisOperation(int dbIndex = -1)
+        /// <param name="dbIndex"></param>
+        /// <param name="waitForFix"></param>
+        /// <returns></returns>
+        public IRedisOperation GetRedisOperation(int dbIndex = -1, bool waitForFix = true)
         {
-            return _redisHelper.GetRedisOperation(dbIndex);
-        }
-
-        /// <summary>
-        /// 自定义初始化
-        /// </summary>
-        /// <param name="serviceName"></param>
-        /// <param name="ipPort"></param>
-        /// <param name="passwords"></param>
-        /// <param name="type"></param>
-        internal void Init(string serviceName, string ipPort, string passwords, RedisConfigType type = 0)
-        {
-            _redisHelper.Init(serviceName, type, ipPort, passwords, serviceName);
+            return _redisHelper.GetRedisOperation(dbIndex, waitForFix);
         }
     }
 }

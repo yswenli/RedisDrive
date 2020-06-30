@@ -3,29 +3,30 @@
 *CLR 版本：4.0.30319.42000
 *机器名称：WALLE-PC
 *命名空间：Wenli.Drive.Redis.Core
-*类 名 称：SERedisSetOperation
+*类 名 称：SERedisOperationForSet
 *版 本 号：V1.0.0.0
 *创建人： yswenli
 *电子邮箱：yswenli@outlook.com
-*创建时间：2019/10/12 14:29:09
+*创建时间：2020/6/3 15:48:09
 *描述：
 *=====================================================================
-*修改时间：2019/10/12 14:29:09
+*修改时间：2020/6/3 15:48:09
 *修 改 人： yswenli
 *版 本 号： V1.0.0.0
 *描    述：
 *****************************************************************************/
+using Wenli.Drive.Redis.Extends;
+using Wenli.Drive.Redis.Interface;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Wenli.Drive.Redis.Core
 {
     /// <summary>
-    /// SERedisSetOperation
+    /// SERedisOperationForSet
     /// </summary>
-    public partial class SERedisOperation
+    public partial class SERedisOperation : IRedisOperation
     {
-
         #region Set
 
         /// <summary>
@@ -38,10 +39,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SetAdd(setId, val);
-                }
+                return _cnn.GetDatabase().SetAdd(setId, val);
             });
         }
 
@@ -55,10 +53,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SetContains(setId, val);
-                }
+                return _cnn.GetDatabase().SetContains(setId, val);
             });
         }
 
@@ -71,15 +66,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    var values = cnn.GetDatabase().SetMembers(setId);
-                    var list = new List<string>();
-                    if ((values != null) && (values.Count() > 0))
-                        foreach (var sitem in values)
-                            list.Add(sitem.ToString());
-                    return list;
-                }
+                return _cnn.GetDatabase().SetMembers(setId).ConvertTo();
             });
         }
 
@@ -93,10 +80,7 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SetRemove(setId, val);
-                }
+                return _cnn.GetDatabase().SetRemove(setId, val);
             });
         }
 
@@ -109,11 +93,8 @@ namespace Wenli.Drive.Redis.Core
         {
             DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    for (var i = 0; i < vals.Length; i++)
-                        cnn.GetDatabase().SetRemove(setId, vals[i]);
-                }
+                for (var i = 0; i < vals.Length; i++)
+                    _cnn.GetDatabase().SetRemove(setId, vals[i]);
             });
         }
 
@@ -126,14 +107,10 @@ namespace Wenli.Drive.Redis.Core
         {
             return DoWithRetry(() =>
             {
-                using (var cnn = new SERedisConnection(_sectionName, _dbIndex))
-                {
-                    return cnn.GetDatabase().SetLength(setId);
-                }
+                return _cnn.GetDatabase().SetLength(setId);
             });
         }
 
         #endregion
-
     }
 }

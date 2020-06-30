@@ -13,6 +13,7 @@
  * 创建人：wenli
  * 创建说明：
  *****************************************************************************************************/
+using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Newtonsoft.Json;
@@ -49,6 +50,20 @@ namespace Wenli.Drive.Redis.Tool
             jsetting.ObjectCreationHandling = ObjectCreationHandling.Replace;
             jsetting.DateFormatString = "yyyy-MM-dd HH:mm:ss.fff";
             return JsonConvert.DeserializeObject<T>(json, jsetting);
+        }
+
+        /// <summary>
+        /// newton.json反序列化
+        /// </summary>
+        /// <param name="json"></param>
+        /// <param name="type">反序列化的类型</param>
+        /// <returns></returns>
+        public static object Deserialize(string json, Type type)
+        {
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.ObjectCreationHandling = ObjectCreationHandling.Replace;
+            settings.DateFormatString = "yyyy-MM-dd HH:mm:ss.fff";
+            return JsonConvert.DeserializeObject(json, type, settings);
         }
 
         /// <summary>
@@ -92,6 +107,18 @@ namespace Wenli.Drive.Redis.Tool
 
             }
 
+        }
+
+        /// <summary>
+        /// 深复制当前对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static dynamic DeepCloneForDynamic<T>(this T obj)
+        {
+            var json = Serialize(obj);
+            return Deserialize(json, obj.GetType());
         }
     }
 }
