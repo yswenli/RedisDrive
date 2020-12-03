@@ -29,6 +29,12 @@ namespace Wenli.Drive.Redis.Interface
         /// <returns></returns>
         TimeSpan Ping();
 
+        /// <summary>
+        /// RedisBatcher
+        /// </summary>
+        /// <returns></returns>
+        RedisBatcher CreateBatcher();
+
         #region Keys
         /// <summary>
         /// 获取keys

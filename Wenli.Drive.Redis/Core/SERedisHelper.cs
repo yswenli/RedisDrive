@@ -71,19 +71,13 @@ namespace Wenli.Drive.Redis.Core
         /// <param name="master"></param>
         /// <param name="password"></param>
         /// <param name="serviceName"></param>
-        /// <param name="poolSize"></param>
-        /// <param name="busyRetry"></param>
-        /// <param name="busyRetryWaitMS"></param>
-        public void Init(string sectionName, RedisConnectType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
+        public void Init(string sectionName, RedisConnectType type, string master, string password = "", string serviceName = "")
         {
             var redisConfig = new RedisConfig()
             {
                 SectionName = sectionName,
                 Type = type,
-                Masters = master,
-                PoolSize = poolSize,
-                BusyRetry = busyRetry,
-                BusyRetryWaitMS = busyRetryWaitMS
+                Masters = master
             };
             if (!string.IsNullOrEmpty(serviceName))
             {
@@ -101,11 +95,10 @@ namespace Wenli.Drive.Redis.Core
         ///  redis操作
         /// </summary>
         /// <param name="dbIndex"></param>
-        /// <param name="waitForFix"></param>
         /// <returns></returns>
-        public IRedisOperation GetRedisOperation(int dbIndex = -1, bool waitForFix = true)
+        public IRedisOperation GetRedisOperation(int dbIndex = -1)
         {
-            return new SERedisOperation(_sectionName, dbIndex, waitForFix, _BusyRetry, _BusyRetryWaitMS);
+            return new SERedisOperation(_sectionName, dbIndex);
         }
 
         /// <summary>

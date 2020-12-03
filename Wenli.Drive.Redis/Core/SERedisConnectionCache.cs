@@ -25,7 +25,7 @@ namespace Wenli.Drive.Redis.Core
     /// </summary>
     internal static class SERedisConnectionCache
     {
-        static ConcurrentDictionary<string, ConnectionMultiplexer> _cache = null;
+        static ConcurrentDictionary<string, RedisConnection> _cache = null;
 
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         static SERedisConnectionCache()
         {
-            _cache = new ConcurrentDictionary<string, ConnectionMultiplexer>();
+            _cache = new ConcurrentDictionary<string, RedisConnection>();
         }
 
         /// <summary>
@@ -45,7 +45,9 @@ namespace Wenli.Drive.Redis.Core
         {
             var old = Get(sectionName);
 
-            new SERedisConnectionDefender(sectionName, connectionStr).FreeAndConnect(old);
+            if (old == null)
+
+                new SERedisConnectionDefender(sectionName, connectionStr).FreeAndConnect();
         }
 
 
@@ -57,7 +59,7 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         /// <param name="sectionName"></param>
         /// <param name="cnn"></param>
-        public static void Set(string sectionName, ConnectionMultiplexer cnn)
+        public static void Set(string sectionName, RedisConnection cnn)
         {
             _cache.AddOrUpdate(sectionName, cnn, (k, v) => cnn);
         }
@@ -79,9 +81,9 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         /// <param name="sectionName"></param>
         /// <returns></returns>
-        public static ConnectionMultiplexer Get(string sectionName)
+        public static RedisConnection Get(string sectionName)
         {
-            if (_cache.TryGetValue(sectionName, out ConnectionMultiplexer cnn))
+            if (_cache.TryGetValue(sectionName, out RedisConnection cnn))
             {
                 return cnn;
             }
@@ -94,10 +96,9 @@ namespace Wenli.Drive.Redis.Core
         /// <param name="sectionName"></param>
         public static void Remove(string sectionName)
         {
-            _cache.TryRemove(sectionName, out ConnectionMultiplexer cnn);
+            _cache.TryRemove(sectionName, out RedisConnection cnn);
         }
 
         #endregion
-
     }
 }

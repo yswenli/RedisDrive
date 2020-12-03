@@ -39,17 +39,13 @@ namespace Wenli.Drive.Redis.Interface
         /// <param name="master"></param>
         /// <param name="password"></param>
         /// <param name="serviceName"></param>
-        /// <param name="poolSize"></param>
-        /// <param name="busyRetry"></param>
-        /// <param name="busyRetryWaitMS"></param>
-        void Init(string sectionName, RedisConnectType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000);
+        void Init(string sectionName, RedisConnectType type, string master, string password = "", string serviceName = "");
 
         /// <summary>
         /// redis操作
         /// </summary>
         /// <param name="dbIndex"></param>
-        /// <param name="waitForFix"></param>
         /// <returns></returns>
-        IRedisOperation GetRedisOperation(int dbIndex = -1, bool waitForFix = true);
+        IRedisOperation GetRedisOperation(int dbIndex = -1);
     }
 }

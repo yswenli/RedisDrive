@@ -76,7 +76,7 @@ namespace Wenli.Drive.Redis
         /// <param name="busyRetryWaitMS"></param>
         internal void Init(string sectionName, RedisConnectType type, string master, string password = "", string serviceName = "", int poolSize = 1, int busyRetry = 10, int busyRetryWaitMS = 1000)
         {
-            _redisHelper.Init(sectionName, type, master, password, serviceName, poolSize, busyRetry, busyRetryWaitMS);
+            _redisHelper.Init(sectionName, type, master, password, serviceName);
         }
 
         /// <summary>
@@ -93,11 +93,10 @@ namespace Wenli.Drive.Redis
         /// redis操作
         /// </summary>
         /// <param name="dbIndex"></param>
-        /// <param name="waitForFix"></param>
         /// <returns></returns>
-        public IRedisOperation GetRedisOperation(int dbIndex = -1, bool waitForFix = true)
+        public IRedisOperation GetRedisOperation(int dbIndex = -1)
         {
-            return _redisHelper.GetRedisOperation(dbIndex, waitForFix);
+            return _redisHelper.GetRedisOperation(dbIndex);
         }
     }
 }

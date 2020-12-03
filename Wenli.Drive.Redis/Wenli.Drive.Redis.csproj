@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.1.0.5</Version>
+    <Version>2.2.8.6</Version>
     <Description>This is a.Net redis integrated driver to support a single instance, cluster, sentinel and other modes of data manipulation  这是一个.net 的redis集成驱动，支持单实例、云集群、哨兵等模式的数据操作</Description>
     <Copyright>Wenli.Drive.Redis @ yswenli</Copyright>
     <PackageTags>Wenli.Drive.Redis,Redis,RedisCluster,RedisSentinel</PackageTags>
@@ -12,6 +12,8 @@
     <PackageReleaseNotes>This is a.Net redis integrated driver to support a single instance, cluster, sentinel and other modes of data manipulation  这是一个.net 的redis集成驱动，支持单实例、云集群、哨兵等模式的数据操作</PackageReleaseNotes>
     <RepositoryType>https://github.com/yswenli/RedisDrive</RepositoryType>
     <PackageProjectUrl>http://www.cnblogs.com/yswenli/p/6235765.html</PackageProjectUrl>
+    <AssemblyVersion>2.2.8.6</AssemblyVersion>
+    <FileVersion>2.2.8.6</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

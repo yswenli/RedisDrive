@@ -18,7 +18,6 @@
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace Wenli.Drive.Redis.Core
@@ -49,11 +48,14 @@ namespace Wenli.Drive.Redis.Core
         /// </summary>
         /// <param name="old"></param>
         /// <returns></returns>
-        internal ConnectionMultiplexer FreeAndConnect(ConnectionMultiplexer old = null)
+        internal RedisConnection FreeAndConnect(RedisConnection old = null)
         {
             SERedisConnectionDefenderEx.AutoResetEvent.WaitOne();
+
             try
             {
+                if (old != null && old.Connection != null && !old.Repairing) return old;
+
                 #region 延迟修复
 
                 if (SERedisConnectionDefenderEx.Repaired.ContainsKey(_sectionName))
@@ -71,13 +73,15 @@ namespace Wenli.Drive.Redis.Core
 
                 #endregion
 
+                //LogCom.WriteInfoLog($"{_sectionName}正在进入连接修复中", _connectStr);
+
                 DisConnect(old);
 
-                return Connect();
+                return Connect(old);
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("SERedisConnectionDefender.FreeAndConnect 异常，connectStr：" + _connectStr, ex);
             }
             finally
             {
@@ -89,11 +93,20 @@ namespace Wenli.Drive.Redis.Core
         /// 建立连接
         /// </summary>
         /// <returns></returns>
-        ConnectionMultiplexer Connect()
+        RedisConnection Connect(RedisConnection old = null)
         {
             try
             {
-                var cnn = ConnectionMultiplexer.Connect(_connectStr);
+                if (old == null)
+                {
+                    old = new RedisConnection() { Connection = ConnectionMultiplexer.Connect(_connectStr), Repairing = false };
+                }
+                else
+                {
+                    old.Connection = ConnectionMultiplexer.Connect(_connectStr);
+
+                    old.Repairing = false;
+                }
 
                 SERedisConnectionDefenderEx.Repaired[_sectionName] = new SectionInfo
                 {
@@ -101,13 +114,13 @@ namespace Wenli.Drive.Redis.Core
                     Created = DateTime.Now
                 };
 
-                SERedisConnectionCache.Set(_sectionName, cnn);
+                SERedisConnectionCache.Set(_sectionName, old);
 
-                return cnn;
+                return old;
             }
             catch (Exception ex)
             {
-                throw new Exception("SERedisConnectionDefender.Connect异常，connectStr：" + _connectStr, ex);
+                throw new Exception("SERedisConnectionDefender.Connect 异常，connectStr：" + _connectStr, ex);
             }
         }
 
@@ -115,17 +128,17 @@ namespace Wenli.Drive.Redis.Core
         /// 释放连接
         /// </summary>
         /// <param name="old"></param>
-        void DisConnect(ConnectionMultiplexer old = null)
+        void DisConnect(RedisConnection old = null)
         {
             if (old == null) return;
 
             SERedisConnectionCache.Remove(_sectionName);
 
-            old.Close();
+            old.Connection.Close();
 
-            old.Dispose();
+            old.Connection.Dispose();
 
-            old = null;
+            old.Connection = null;
         }
     }
 
